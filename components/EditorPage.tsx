@@ -197,24 +197,15 @@ const Sidebar: React.FC<{
                   <button onClick={() => onApplyFormat('underline')} className="p-2 rounded-md hover:bg-slate-200 text-slate-600"><Icons.UnderlineIcon className="w-5 h-5"/></button>
                   <div className="w-px h-6 bg-slate-300"></div>
                   
-                  {/* Unordered List Dropdown */}
                   <div className="relative">
-                      <div className="flex items-center">
-                          <button 
-                              onClick={() => handleUnorderedListFormat('disc')} 
-                              className="p-2 rounded-l-md hover:bg-slate-200 text-slate-600"
-                              title="Bulleted List"
-                          >
-                              <Icons.ListIcon className="w-5 h-5"/>
-                          </button>
-                          <button 
-                              onClick={() => setShowUnorderedListOptions(prev => !prev)} 
-                              className="p-2 rounded-r-md hover:bg-slate-200 text-slate-600 border-l border-slate-300"
-                              title="List styles"
-                          >
-                              <Icons.ChevronDownIcon className="w-4 h-4"/>
-                          </button>
-                      </div>
+                      <button 
+                          onClick={() => setShowUnorderedListOptions(prev => !prev)} 
+                          className="flex items-center space-x-1 p-2 rounded-md hover:bg-slate-200 text-slate-600"
+                          title="Bulleted List Styles"
+                      >
+                          <Icons.ListIcon className="w-5 h-5"/>
+                          <Icons.ChevronDownIcon className="w-4 h-4"/>
+                      </button>
                       {showUnorderedListOptions && (
                           <div className="absolute z-10 top-full mt-1 left-0 w-36 bg-white border border-slate-200 rounded-md shadow-lg py-1">
                               <button onClick={() => handleUnorderedListFormat('disc')} className="flex items-center w-full px-3 py-1 text-sm text-left text-slate-700 hover:bg-slate-100">
@@ -230,24 +221,15 @@ const Sidebar: React.FC<{
                       )}
                   </div>
 
-                  {/* Ordered List Dropdown */}
                   <div className="relative">
-                      <div className="flex items-center">
-                          <button 
-                              onClick={() => handleOrderedListFormat('decimal')} 
-                              className="p-2 rounded-l-md hover:bg-slate-200 text-slate-600"
-                              title="Numbered List"
-                          >
-                              <Icons.ListOrderedIcon className="w-5 h-5"/>
-                          </button>
-                          <button 
-                              onClick={() => setShowOrderedListOptions(prev => !prev)} 
-                              className="p-2 rounded-r-md hover:bg-slate-200 text-slate-600 border-l border-slate-300"
-                              title="List styles"
-                          >
-                              <Icons.ChevronDownIcon className="w-4 h-4"/>
-                          </button>
-                      </div>
+                      <button 
+                          onClick={() => setShowOrderedListOptions(prev => !prev)} 
+                          className="flex items-center space-x-1 p-2 rounded-md hover:bg-slate-200 text-slate-600"
+                          title="Numbered List Styles"
+                      >
+                          <Icons.ListOrderedIcon className="w-5 h-5"/>
+                          <Icons.ChevronDownIcon className="w-4 h-4"/>
+                      </button>
                       {showOrderedListOptions && (
                           <div className="absolute z-10 top-full mt-1 left-0 w-48 bg-white border border-slate-200 rounded-md shadow-lg py-1">
                               <button onClick={() => handleOrderedListFormat('decimal')} className="flex items-center w-full px-3 py-1 text-sm text-left text-slate-700 hover:bg-slate-100">
@@ -509,7 +491,6 @@ const ResumePreview: React.FC<{
       value: string;
       className?: string;
       style?: React.CSSProperties;
-      // FIX: Changed type from `keyof JSX.IntrinsicElements` to `React.ElementType` to resolve JSX namespace error.
       tag?: React.ElementType;
     }> = ({ fieldKey, value, className, style, tag: Tag = 'div' }) => (
         <Tag
