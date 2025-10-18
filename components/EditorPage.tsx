@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useRef, useLayoutEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import { ResumeData, SidebarTab, ResumeSection, Aisuggestions } from '../types';
 import { DEFAULT_RESUME_DATA, ALL_SECTIONS, SECTION_PLACEHOLDERS } from '../constants';
@@ -92,6 +92,16 @@ const Sidebar: React.FC<{
         document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  const handleUnorderedListClick = () => {
+      setShowOrderedListOptions(false);
+      setShowUnorderedListOptions(prev => !prev);
+  }
+
+  const handleOrderedListClick = () => {
+      setShowUnorderedListOptions(false);
+      setShowOrderedListOptions(prev => !prev);
+  }
 
   const handleUnorderedListFormat = (style: string) => {
       onApplyFormat('insertUnorderedList', style);
@@ -199,12 +209,11 @@ const Sidebar: React.FC<{
                   
                   <div className="relative">
                       <button 
-                          onClick={() => setShowUnorderedListOptions(prev => !prev)} 
-                          className="flex items-center space-x-1 p-2 rounded-md hover:bg-slate-200 text-slate-600"
-                          title="Bulleted List Styles"
+                          onClick={handleUnorderedListClick}
+                          className="p-2 rounded-md hover:bg-slate-200 text-slate-600"
+                          title="Bulleted List"
                       >
                           <Icons.ListIcon className="w-5 h-5"/>
-                          <Icons.ChevronDownIcon className="w-4 h-4"/>
                       </button>
                       {showUnorderedListOptions && (
                           <div className="absolute z-10 top-full mt-1 left-0 w-36 bg-white border border-slate-200 rounded-md shadow-lg py-1">
@@ -223,12 +232,11 @@ const Sidebar: React.FC<{
 
                   <div className="relative">
                       <button 
-                          onClick={() => setShowOrderedListOptions(prev => !prev)} 
-                          className="flex items-center space-x-1 p-2 rounded-md hover:bg-slate-200 text-slate-600"
-                          title="Numbered List Styles"
+                          onClick={handleOrderedListClick}
+                          className="p-2 rounded-md hover:bg-slate-200 text-slate-600"
+                          title="Numbered List"
                       >
                           <Icons.ListOrderedIcon className="w-5 h-5"/>
-                          <Icons.ChevronDownIcon className="w-4 h-4"/>
                       </button>
                       {showOrderedListOptions && (
                           <div className="absolute z-10 top-full mt-1 left-0 w-48 bg-white border border-slate-200 rounded-md shadow-lg py-1">
@@ -380,6 +388,43 @@ const Sidebar: React.FC<{
   );
 };
 
+const EditableField: React.FC<{
+  fieldKey: keyof ResumeData | `contact.${keyof ResumeData['contact']}` | `section.${string}` | `section.title.${string}`;
+  value: string;
+  onContentChange: (fieldKey: string, value: string) => void;
+  className?: string;
+  style?: React.CSSProperties;
+  tag?: React.ElementType;
+}> = ({ fieldKey, value, onContentChange, className, style, tag: Tag = 'div' }) => {
+    const elementRef = useRef<HTMLElement>(null!);
+
+    useLayoutEffect(() => {
+        // This effect syncs the DOM with the `value` prop.
+        // It's crucial for features like "Undo" where the state changes
+        // externally. It compares the current DOM content with the new
+        // prop value to avoid unnecessary DOM manipulation, which would
+        // cause the selection to be lost.
+        if (elementRef.current && elementRef.current.innerHTML !== value) {
+            elementRef.current.innerHTML = value;
+        }
+    }, [value]);
+
+    return (
+        <Tag
+            ref={elementRef}
+            contentEditable
+            suppressContentEditableWarning={true}
+            data-field-key={fieldKey}
+            onInput={e => onContentChange(fieldKey, (e.currentTarget as HTMLElement).innerHTML)}
+            className={`outline-none focus:bg-blue-50 focus:shadow-inner p-1 rounded-sm ${className || ''}`}
+            style={style}
+            // By removing dangerouslySetInnerHTML, we are telling React that we will manage the content
+            // of this element imperatively. The initial content will be set by the useLayoutEffect on mount.
+        />
+    );
+};
+
+
 const ResumePreview: React.FC<{
   resumeData: ResumeData;
   onContentChange: (
@@ -486,25 +531,6 @@ const ResumePreview: React.FC<{
 
     }, [resumeData, formatting]);
 
-    const EditableField: React.FC<{
-      fieldKey: keyof ResumeData | `contact.${keyof ResumeData['contact']}` | `section.${string}` | `section.title.${string}`;
-      value: string;
-      className?: string;
-      style?: React.CSSProperties;
-      tag?: React.ElementType;
-    }> = ({ fieldKey, value, className, style, tag: Tag = 'div' }) => (
-        <Tag
-            contentEditable
-            suppressContentEditableWarning
-            data-field-key={fieldKey}
-            onInput={e => onContentChange(fieldKey, (e.currentTarget as HTMLElement).innerHTML)}
-            className={`outline-none focus:bg-blue-50 focus:shadow-inner p-1 rounded-sm ${className || ''}`}
-            style={style}
-            dangerouslySetInnerHTML={{ __html: value }}
-        />
-    );
-
-
     return (
         <div className="flex-1 p-10 bg-slate-100 overflow-y-auto">
              <style>{`
@@ -525,14 +551,14 @@ const ResumePreview: React.FC<{
                 >
                     {pageIndex === 0 && (
                         <div className="text-center border-b pb-4 border-slate-300">
-                            <EditableField fieldKey="name" value={resumeData.name} className="text-3xl font-bold uppercase tracking-wider" />
-                            <EditableField fieldKey="title" value={resumeData.title} className="text-md mt-1" />
+                            <EditableField onContentChange={onContentChange} fieldKey="name" value={resumeData.name} className="text-3xl font-bold uppercase tracking-wider" />
+                            <EditableField onContentChange={onContentChange} fieldKey="title" value={resumeData.title} className="text-md mt-1" />
                             <div className="flex justify-center items-center space-x-2 text-sm mt-2 text-slate-600">
-                                <EditableField tag="span" fieldKey="contact.email" value={resumeData.contact.email} />
+                                <EditableField onContentChange={onContentChange} tag="span" fieldKey="contact.email" value={resumeData.contact.email} />
                                 <span>|</span>
-                                <EditableField tag="span" fieldKey="contact.phone" value={resumeData.contact.phone} />
+                                <EditableField onContentChange={onContentChange} tag="span" fieldKey="contact.phone" value={resumeData.contact.phone} />
                                 <span>|</span>
-                                <EditableField tag="span" fieldKey="contact.linkedin" value={resumeData.contact.linkedin} />
+                                <EditableField onContentChange={onContentChange} tag="span" fieldKey="contact.linkedin" value={resumeData.contact.linkedin} />
                             </div>
                         </div>
                     )}
@@ -540,13 +566,14 @@ const ResumePreview: React.FC<{
                         {pageSections.map(section => (
                             <div key={section.id}>
                                 <EditableField 
+                                    onContentChange={onContentChange}
                                     tag="h2" 
                                     fieldKey={`section.title.${section.id}`} 
                                     value={section.title} 
                                     className="text-sm font-bold uppercase tracking-widest border-b-2 pb-1 mb-2" 
                                     style={{ borderColor: formatting.accentColor }} 
                                 />
-                                <EditableField fieldKey={`section.${section.id}`} value={section.content} />
+                                <EditableField onContentChange={onContentChange} fieldKey={`section.${section.id}`} value={section.content} />
                             </div>
                         ))}
                     </div>
