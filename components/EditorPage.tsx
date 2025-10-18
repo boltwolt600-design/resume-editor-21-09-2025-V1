@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import { ResumeData, SidebarTab, ResumeSection, Aisuggestions } from '../types';
@@ -73,10 +72,36 @@ const Sidebar: React.FC<{
   isAiLoading: boolean;
   formatting: FormattingOptions;
   onFormattingChange: (key: keyof FormattingOptions, value: any) => void;
-  onApplyFormat: (command: string) => void;
+  onApplyFormat: (command: string, value?: string) => void;
 }> = ({ activeTab, setActiveTab, resumeData, setResumeData, aiSuggestions, handleAiAction, isAiLoading, formatting, onFormattingChange, onApplyFormat }) => {
   const tabs: SidebarTab[] = ['Design', 'Formatting', 'Sections', 'AI Copilot'];
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [showUnorderedListOptions, setShowUnorderedListOptions] = useState(false);
+  const [showOrderedListOptions, setShowOrderedListOptions] = useState(false);
+  const listOptionsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+        if (listOptionsRef.current && !listOptionsRef.current.contains(event.target as Node)) {
+            setShowUnorderedListOptions(false);
+            setShowOrderedListOptions(false);
+        }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const handleUnorderedListFormat = (style: string) => {
+      onApplyFormat('insertUnorderedList', style);
+      setShowUnorderedListOptions(false);
+  };
+
+  const handleOrderedListFormat = (style: string) => {
+      onApplyFormat('insertOrderedList', style);
+      setShowOrderedListOptions(false);
+  };
 
   const addSection = (sectionTitle: string) => {
     if (!resumeData.sections.find(s => s.title.toLowerCase() === sectionTitle.toLowerCase())) {
@@ -166,13 +191,84 @@ const Sidebar: React.FC<{
           <div className="space-y-8">
             <div>
               <h3 className="text-lg font-semibold text-slate-800 mb-4">Text & Paragraph</h3>
-              <div className="flex items-center space-x-1 p-1 bg-slate-100 rounded-lg justify-around">
+              <div className="flex items-center space-x-1 p-1 bg-slate-100 rounded-lg" ref={listOptionsRef}>
                   <button onClick={() => onApplyFormat('bold')} className="p-2 rounded-md hover:bg-slate-200 text-slate-600"><Icons.BoldIcon className="w-5 h-5"/></button>
                   <button onClick={() => onApplyFormat('italic')} className="p-2 rounded-md hover:bg-slate-200 text-slate-600"><Icons.ItalicIcon className="w-5 h-5"/></button>
                   <button onClick={() => onApplyFormat('underline')} className="p-2 rounded-md hover:bg-slate-200 text-slate-600"><Icons.UnderlineIcon className="w-5 h-5"/></button>
                   <div className="w-px h-6 bg-slate-300"></div>
-                  <button onClick={() => onApplyFormat('insertUnorderedList')} className="p-2 rounded-md hover:bg-slate-200 text-slate-600"><Icons.ListIcon className="w-5 h-5"/></button>
-                  <button onClick={() => onApplyFormat('insertOrderedList')} className="p-2 rounded-md hover:bg-slate-200 text-slate-600"><Icons.ListOrderedIcon className="w-5 h-5"/></button>
+                  
+                  {/* Unordered List Dropdown */}
+                  <div className="relative">
+                      <div className="flex items-center">
+                          <button 
+                              onClick={() => handleUnorderedListFormat('disc')} 
+                              className="p-2 rounded-l-md hover:bg-slate-200 text-slate-600"
+                              title="Bulleted List"
+                          >
+                              <Icons.ListIcon className="w-5 h-5"/>
+                          </button>
+                          <button 
+                              onClick={() => setShowUnorderedListOptions(prev => !prev)} 
+                              className="p-2 rounded-r-md hover:bg-slate-200 text-slate-600 border-l border-slate-300"
+                              title="List styles"
+                          >
+                              <Icons.ChevronDownIcon className="w-4 h-4"/>
+                          </button>
+                      </div>
+                      {showUnorderedListOptions && (
+                          <div className="absolute z-10 top-full mt-1 left-0 w-36 bg-white border border-slate-200 rounded-md shadow-lg py-1">
+                              <button onClick={() => handleUnorderedListFormat('disc')} className="flex items-center w-full px-3 py-1 text-sm text-left text-slate-700 hover:bg-slate-100">
+                                  <span className="mr-3 text-lg">&bull;</span> Disc
+                              </button>
+                              <button onClick={() => handleUnorderedListFormat('circle')} className="flex items-center w-full px-3 py-1 text-sm text-left text-slate-700 hover:bg-slate-100">
+                                  <span className="mr-3 text-lg">&#9702;</span> Circle
+                              </button>
+                              <button onClick={() => handleUnorderedListFormat('square')} className="flex items-center w-full px-3 py-1 text-sm text-left text-slate-700 hover:bg-slate-100">
+                                  <span className="mr-3 text-lg">&#9642;</span> Square
+                              </button>
+                          </div>
+                      )}
+                  </div>
+
+                  {/* Ordered List Dropdown */}
+                  <div className="relative">
+                      <div className="flex items-center">
+                          <button 
+                              onClick={() => handleOrderedListFormat('decimal')} 
+                              className="p-2 rounded-l-md hover:bg-slate-200 text-slate-600"
+                              title="Numbered List"
+                          >
+                              <Icons.ListOrderedIcon className="w-5 h-5"/>
+                          </button>
+                          <button 
+                              onClick={() => setShowOrderedListOptions(prev => !prev)} 
+                              className="p-2 rounded-r-md hover:bg-slate-200 text-slate-600 border-l border-slate-300"
+                              title="List styles"
+                          >
+                              <Icons.ChevronDownIcon className="w-4 h-4"/>
+                          </button>
+                      </div>
+                      {showOrderedListOptions && (
+                          <div className="absolute z-10 top-full mt-1 left-0 w-48 bg-white border border-slate-200 rounded-md shadow-lg py-1">
+                              <button onClick={() => handleOrderedListFormat('decimal')} className="flex items-center w-full px-3 py-1 text-sm text-left text-slate-700 hover:bg-slate-100">
+                                  <span className="mr-3">1.</span> Decimal
+                              </button>
+                              <button onClick={() => handleOrderedListFormat('lower-alpha')} className="flex items-center w-full px-3 py-1 text-sm text-left text-slate-700 hover:bg-slate-100">
+                                  <span className="mr-3">a.</span> Lower Alpha
+                              </button>
+                              <button onClick={() => handleOrderedListFormat('upper-alpha')} className="flex items-center w-full px-3 py-1 text-sm text-left text-slate-700 hover:bg-slate-100">
+                                  <span className="mr-3">A.</span> Upper Alpha
+                              </button>
+                              <button onClick={() => handleOrderedListFormat('lower-roman')} className="flex items-center w-full px-3 py-1 text-sm text-left text-slate-700 hover:bg-slate-100">
+                                  <span className="mr-3">i.</span> Lower Roman
+                              </button>
+                              <button onClick={() => handleOrderedListFormat('upper-roman')} className="flex items-center w-full px-3 py-1 text-sm text-left text-slate-700 hover:bg-slate-100">
+                                  <span className="mr-3">I.</span> Upper Roman
+                              </button>
+                          </div>
+                      )}
+                  </div>
+
                   <div className="w-px h-6 bg-slate-300"></div>
                   <button onClick={() => onApplyFormat('outdent')} className="p-2 rounded-md hover:bg-slate-200 text-slate-600"><Icons.OutdentIcon className="w-5 h-5"/></button>
                   <button onClick={() => onApplyFormat('indent')} className="p-2 rounded-md hover:bg-slate-200 text-slate-600"><Icons.IndentIcon className="w-5 h-5"/></button>
@@ -246,7 +342,7 @@ const Sidebar: React.FC<{
                                 onDragEnd={handleDragEnd}
                                 className={`flex items-center justify-between bg-slate-100 p-2 rounded-md cursor-move transition-opacity ${draggedIndex === index ? 'opacity-50' : 'opacity-100'}`}
                             >
-                                <span className="text-sm font-medium text-slate-700">{section.title}</span>
+                                <span className="text-sm font-medium text-slate-700" dangerouslySetInnerHTML={{__html: section.title}}></span>
                                 <div className="flex items-center space-x-1">
                                     <button onClick={() => duplicateSection(section.id)} className="p-1 text-slate-400 hover:text-blue-500" title="Duplicate section">
                                         <Icons.CopyIcon className="w-4 h-4" />
@@ -305,7 +401,7 @@ const Sidebar: React.FC<{
 const ResumePreview: React.FC<{
   resumeData: ResumeData;
   onContentChange: (
-    field: keyof ResumeData | `contact.${keyof ResumeData['contact']}` | `section.${string}`,
+    field: keyof ResumeData | `contact.${keyof ResumeData['contact']}` | `section.${string}` | `section.title.${string}`,
     value: string
   ) => void;
   formatting: FormattingOptions;
@@ -340,7 +436,7 @@ const ResumePreview: React.FC<{
                 <div className="mt-6 space-y-5">
                     {data.sections.map(section => (
                         <div key={section.id} data-section-id={section.id} className="resume-section-measure">
-                            <h2 className="text-sm font-bold uppercase tracking-widest border-b-2 pb-1 mb-2" style={{ borderColor: format.accentColor }}>{section.title}</h2>
+                            <h2 className="text-sm font-bold uppercase tracking-widest border-b-2 pb-1 mb-2" style={{ borderColor: format.accentColor }} dangerouslySetInnerHTML={{ __html: section.title }} />
                             <div dangerouslySetInnerHTML={{ __html: section.content || ' ' }} />
                         </div>
                     ))}
@@ -409,18 +505,20 @@ const ResumePreview: React.FC<{
     }, [resumeData, formatting]);
 
     const EditableField: React.FC<{
-      // FIX: The type for fieldKey was too broad ('string'), causing a type error. 
-      // It's now correctly typed to match the specific keys expected by onContentChange.
-      fieldKey: keyof ResumeData | `contact.${keyof ResumeData['contact']}` | `section.${string}`;
+      fieldKey: keyof ResumeData | `contact.${keyof ResumeData['contact']}` | `section.${string}` | `section.title.${string}`;
       value: string;
       className?: string;
-    }> = ({ fieldKey, value, className }) => (
-        <div
+      style?: React.CSSProperties;
+      // FIX: Changed type from `keyof JSX.IntrinsicElements` to `React.ElementType` to resolve JSX namespace error.
+      tag?: React.ElementType;
+    }> = ({ fieldKey, value, className, style, tag: Tag = 'div' }) => (
+        <Tag
             contentEditable
             suppressContentEditableWarning
             data-field-key={fieldKey}
-            onInput={e => onContentChange(fieldKey, e.currentTarget.innerHTML)}
-            className={`outline-none focus:bg-blue-50 focus:shadow-inner p-1 rounded-sm ${className}`}
+            onInput={e => onContentChange(fieldKey, (e.currentTarget as HTMLElement).innerHTML)}
+            className={`outline-none focus:bg-blue-50 focus:shadow-inner p-1 rounded-sm ${className || ''}`}
+            style={style}
             dangerouslySetInnerHTML={{ __html: value }}
         />
     );
@@ -449,18 +547,24 @@ const ResumePreview: React.FC<{
                             <EditableField fieldKey="name" value={resumeData.name} className="text-3xl font-bold uppercase tracking-wider" />
                             <EditableField fieldKey="title" value={resumeData.title} className="text-md mt-1" />
                             <div className="flex justify-center items-center space-x-2 text-sm mt-2 text-slate-600">
-                                <EditableField fieldKey="contact.email" value={resumeData.contact.email} />
+                                <EditableField tag="span" fieldKey="contact.email" value={resumeData.contact.email} />
                                 <span>|</span>
-                                <EditableField fieldKey="contact.phone" value={resumeData.contact.phone} />
+                                <EditableField tag="span" fieldKey="contact.phone" value={resumeData.contact.phone} />
                                 <span>|</span>
-                                <EditableField fieldKey="contact.linkedin" value={resumeData.contact.linkedin} />
+                                <EditableField tag="span" fieldKey="contact.linkedin" value={resumeData.contact.linkedin} />
                             </div>
                         </div>
                     )}
                     <div className={`space-y-5 ${pageIndex === 0 ? 'mt-6' : ''}`}>
                         {pageSections.map(section => (
                             <div key={section.id}>
-                                <h2 className="text-sm font-bold uppercase tracking-widest border-b-2 pb-1 mb-2" style={{ borderColor: formatting.accentColor }}>{section.title}</h2>
+                                <EditableField 
+                                    tag="h2" 
+                                    fieldKey={`section.title.${section.id}`} 
+                                    value={section.title} 
+                                    className="text-sm font-bold uppercase tracking-widest border-b-2 pb-1 mb-2" 
+                                    style={{ borderColor: formatting.accentColor }} 
+                                />
                                 <EditableField fieldKey={`section.${section.id}`} value={section.content} />
                             </div>
                         ))}
@@ -507,6 +611,13 @@ const EditorPage: React.FC<{ onBackToHome: () => void }> = ({ onBackToHome }) =>
     value: string
   ) => {
       setResumeData(prev => {
+          if (field.startsWith('section.title.')) {
+              const sectionId = field.split('.')[2];
+              return {
+                  ...prev,
+                  sections: prev.sections.map(s => s.id === sectionId ? {...s, title: value} : s)
+              };
+          }
           if (field.startsWith('section.')) {
               const sectionId = field.split('.')[1];
               return {
@@ -528,17 +639,53 @@ const EditorPage: React.FC<{ onBackToHome: () => void }> = ({ onBackToHome }) =>
       });
   }, [setResumeData]);
 
-  const handleApplyFormat = (command: string) => {
-      document.execCommand(command, false, undefined);
+  const handleApplyFormat = (command: string, value?: string) => {
+    if ((command === 'insertUnorderedList' || command === 'insertOrderedList') && value) {
+        const listType = command === 'insertUnorderedList' ? 'UL' : 'OL';
+        const selection = window.getSelection();
+        if (!selection || selection.rangeCount === 0) return;
+
+        let range = selection.getRangeAt(0);
+        let container = range.commonAncestorContainer;
+        if (container.nodeType !== Node.ELEMENT_NODE) {
+            container = container.parentNode!;
+        }
+
+        let listElement = container as HTMLElement;
+        while (listElement && !['UL', 'OL'].includes(listElement.tagName) && listElement.contentEditable !== 'true') {
+            listElement = listElement.parentElement!;
+        }
+
+        if (listElement && listElement.tagName === listType) {
+            listElement.style.listStyleType = value;
+        } else {
+            document.execCommand(command, false, undefined);
+            
+            const newSelection = window.getSelection()!;
+            range = newSelection.getRangeAt(0);
+            container = range.commonAncestorContainer;
+            if (container.nodeType !== Node.ELEMENT_NODE) {
+                container = container.parentNode!;
+            }
+            let newListElement = container as HTMLElement;
+            while (newListElement && newListElement.tagName !== listType && newListElement.contentEditable !== 'true') {
+                newListElement = newListElement.parentElement!;
+            }
+            if (newListElement && newListElement.tagName === listType) {
+                newListElement.style.listStyleType = value;
+            }
+        }
+    } else {
+        document.execCommand(command, false, value);
+    }
       
-      const activeElement = document.activeElement as HTMLElement;
-      if (activeElement && activeElement.isContentEditable) {
-          const fieldKey = activeElement.dataset.fieldKey;
-          const newHtml = activeElement.innerHTML;
-          if (fieldKey) {
-            handleContentChange(fieldKey, newHtml);
-          }
-      }
+    const activeElement = document.activeElement as HTMLElement;
+    if (activeElement && activeElement.isContentEditable) {
+        const fieldKey = activeElement.dataset.fieldKey;
+        if (fieldKey) {
+            handleContentChange(fieldKey, activeElement.innerHTML);
+        }
+    }
   };
 
 
