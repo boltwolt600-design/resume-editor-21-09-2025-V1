@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
+import ReactDOM from 'react-dom/client';
 import { ResumeData, SidebarTab, ResumeSection, Aisuggestions } from '../types';
 import { DEFAULT_RESUME_DATA, ALL_SECTIONS, SECTION_PLACEHOLDERS } from '../constants';
 import * as Icons from './icons';
@@ -184,7 +185,7 @@ const Sidebar: React.FC<{
                  <div>
                     <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3">Add Section</h3>
                     <div className="space-y-2">
-                        {ALL_SECTIONS.filter(title => !resumeData.sections.some(s => s.title.toLowerCase() === title.toLowerCase())).map(title => (
+                        {ALL_SECTIONS.filter(title => !resumeData.sections.some(s => s.title.toUpperCase() === title.toUpperCase() || s.title.startsWith(title.toUpperCase() + ' (COPY'))).map(title => (
                            <div key={title} className="flex items-center justify-between bg-white p-2 rounded-md border border-slate-200">
                                <span className="text-sm text-slate-600">{title}</span>
                                <button onClick={() => addSection(title)} className="p-1 text-slate-400 hover:text-blue-500"><Icons.PlusIcon className="w-4 h-4"/></button>
@@ -228,6 +229,94 @@ const ResumePreview: React.FC<{
   resumeData: ResumeData;
   setResumeData: React.Dispatch<React.SetStateAction<ResumeData>>;
 }> = ({ resumeData, setResumeData }) => {
+    const [paginatedSections, setPaginatedSections] = useState<ResumeSection[][]>([resumeData.sections]);
+
+    useEffect(() => {
+        const measurementContainer = document.createElement('div');
+        measurementContainer.style.position = 'absolute';
+        measurementContainer.style.left = '-9999px';
+        measurementContainer.style.top = '-9999px';
+        measurementContainer.className = "w-[8.5in] p-12 text-[11pt] font-[Inter,sans-serif] text-slate-800";
+        document.body.appendChild(measurementContainer);
+
+        const MeasurementContent: React.FC<{ data: ResumeData }> = ({ data }) => (
+            <>
+                <div className="text-center border-b pb-4 border-slate-300 resume-header-measure">
+                    <div className="text-3xl font-bold uppercase tracking-wider">{data.name}</div>
+                    <div className="text-md mt-1">{data.title}</div>
+                    <div className="flex justify-center items-center space-x-2 text-sm mt-2 text-slate-600">
+                        <span>{data.contact.email}</span>|<span>{data.contact.phone}</span>|<span>{data.contact.linkedin}</span>
+                    </div>
+                </div>
+                <div className="mt-6 space-y-5">
+                    {data.sections.map(section => (
+                        <div key={section.id} data-section-id={section.id} className="resume-section-measure">
+                            <h2 className="text-sm font-bold uppercase tracking-widest border-b-2 border-slate-700 pb-1 mb-2">{section.title}</h2>
+                            <div style={{ whiteSpace: 'pre-wrap' }}>{section.content || ' '}</div>
+                        </div>
+                    ))}
+                </div>
+            </>
+        );
+
+        const root = ReactDOM.createRoot(measurementContainer);
+        root.render(<MeasurementContent data={resumeData} />);
+
+        const timeoutId = setTimeout(() => {
+            const headerEl = measurementContainer.querySelector('.resume-header-measure') as HTMLElement;
+            const sectionEls = Array.from(measurementContainer.querySelectorAll('.resume-section-measure')) as HTMLElement[];
+            
+            // 11in page height @ 96dpi minus 3rem padding top/bottom (96px) and an additional 3rem (48px) for footer space.
+            const maxContentHeight = 1056 - 144; 
+
+            if (!headerEl || sectionEls.length < resumeData.sections.length) {
+                 root.unmount();
+                 document.body.removeChild(measurementContainer);
+                 return;
+            }
+
+            const newPages: ResumeSection[][] = [];
+            let currentPage: ResumeSection[] = [];
+            let currentPageHeight = headerEl.offsetHeight;
+
+            resumeData.sections.forEach(section => {
+                const sectionEl = sectionEls.find(el => el.dataset.sectionId === section.id);
+                if (!sectionEl) return;
+                
+                const sectionHeight = sectionEl.offsetHeight;
+                
+                if (currentPageHeight + sectionHeight > maxContentHeight && currentPage.length > 0) {
+                    newPages.push(currentPage);
+                    currentPage = [section];
+                    currentPageHeight = sectionHeight; // Height for the new page starts with its first section
+                } else {
+                    currentPage.push(section);
+                    currentPageHeight += sectionHeight;
+                }
+            });
+
+            if (currentPage.length > 0) {
+                newPages.push(currentPage);
+            }
+            
+            if (JSON.stringify(newPages) !== JSON.stringify(paginatedSections)) {
+                 setPaginatedSections(newPages);
+            }
+
+            root.unmount();
+            document.body.removeChild(measurementContainer);
+
+        }, 100);
+
+        return () => {
+            clearTimeout(timeoutId);
+            if (document.body.contains(measurementContainer)) {
+                root.unmount();
+                document.body.removeChild(measurementContainer);
+            }
+        };
+
+    }, [resumeData]);
 
     const handleContentChange = (
         field: keyof ResumeData | `contact.${keyof ResumeData['contact']}` | `section.${string}`,
@@ -271,27 +360,35 @@ const ResumePreview: React.FC<{
 
     return (
         <div className="flex-1 p-10 bg-slate-100 overflow-y-auto">
-            <div id="resume-paper" className="w-[8.5in] h-[11in] bg-white shadow-lg mx-auto p-12 text-[11pt] font-[Inter,sans-serif] text-slate-800">
-                <div className="text-center border-b pb-4 border-slate-300">
-                    <EditableField fieldKey="name" value={resumeData.name} className="text-3xl font-bold uppercase tracking-wider" />
-                    <EditableField fieldKey="title" value={resumeData.title} className="text-md mt-1" />
-                    <div className="flex justify-center items-center space-x-2 text-sm mt-2 text-slate-600">
-                         <EditableField fieldKey="contact.email" value={resumeData.contact.email} />
-                         <span>|</span>
-                         <EditableField fieldKey="contact.phone" value={resumeData.contact.phone} />
-                         <span>|</span>
-                         <EditableField fieldKey="contact.linkedin" value={resumeData.contact.linkedin} />
+            {paginatedSections.map((pageSections, pageIndex) => (
+                <div 
+                    key={pageIndex} 
+                    id={`resume-page-${pageIndex}`} 
+                    className="w-[8.5in] h-[11in] bg-white shadow-lg mx-auto p-12 text-[11pt] font-[Inter,sans-serif] text-slate-800 mb-8"
+                >
+                    {pageIndex === 0 && (
+                        <div className="text-center border-b pb-4 border-slate-300">
+                            <EditableField fieldKey="name" value={resumeData.name} className="text-3xl font-bold uppercase tracking-wider" />
+                            <EditableField fieldKey="title" value={resumeData.title} className="text-md mt-1" />
+                            <div className="flex justify-center items-center space-x-2 text-sm mt-2 text-slate-600">
+                                <EditableField fieldKey="contact.email" value={resumeData.contact.email} />
+                                <span>|</span>
+                                <EditableField fieldKey="contact.phone" value={resumeData.contact.phone} />
+                                <span>|</span>
+                                <EditableField fieldKey="contact.linkedin" value={resumeData.contact.linkedin} />
+                            </div>
+                        </div>
+                    )}
+                    <div className={`space-y-5 ${pageIndex === 0 ? 'mt-6' : ''}`}>
+                        {pageSections.map(section => (
+                            <div key={section.id}>
+                                <h2 className="text-sm font-bold uppercase tracking-widest border-b-2 border-slate-700 pb-1 mb-2">{section.title}</h2>
+                                <EditableField fieldKey={`section.${section.id}`} value={section.content} isTextArea={true} />
+                            </div>
+                        ))}
                     </div>
                 </div>
-                <div className="mt-6 space-y-5">
-                    {resumeData.sections.map(section => (
-                        <div key={section.id}>
-                            <h2 className="text-sm font-bold uppercase tracking-widest border-b-2 border-slate-700 pb-1 mb-2">{section.title}</h2>
-                            <EditableField fieldKey={`section.${section.id}`} value={section.content} isTextArea={true} />
-                        </div>
-                    ))}
-                </div>
-            </div>
+            ))}
         </div>
     );
 };
