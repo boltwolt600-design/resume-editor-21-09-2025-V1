@@ -14,7 +14,17 @@ const templates = [
   { name: 'Creative Photo', color: 'bg-purple-500' },
 ];
 
-const accentColors = ['#4285F4', '#EA4335', '#34A853', '#FBBC05', '#8B5CF6', '#718096', '#000000', '#FFFFFF'];
+const colorPalette = {
+    grayscale: ['#000000', '#434343', '#666666', '#999999', '#cccccc', '#d9d9d9', '#efefef', '#f3f3f3', '#ffffff'],
+    vibrant: ['#ff0000', '#ff9900', '#ffff00', '#00ff00', '#00ffff', '#0000ff', '#9900ff', '#ff00ff'],
+    light: ['#f4cccc', '#fce5cd', '#fff2cc', '#d9ead3', '#d0e0e3', '#cfe2f3', '#d9d2e9', '#ead1dc',
+            '#ea9999', '#f9cb9c', '#ffe599', '#b6d7a8', '#a2c4c9', '#9fc5e8', '#b4a7d6', '#d5a6bd'],
+    medium: ['#e06666', '#f6b26b', '#ffd966', '#93c47d', '#76a5af', '#6fa8dc', '#8e7cc3', '#c27ba0',
+             '#cc0000', '#e69138', '#f1c232', '#6aa84f', '#45818e', '#3d85c6', '#674ea7', '#a64d79'],
+    dark: ['#990000', '#b45f06', '#bf9000', '#38761d', '#134f5c', '#0b5394', '#351c75', '#741b47',
+           '#660000', '#783f04', '#7f6000', '#274e13', '#0c343d', '#073763', '#20124d', '#4c1130']
+};
+
 
 // Custom hook for managing state history
 const useHistory = <T,>(initialState: T) => {
@@ -86,9 +96,11 @@ const Sidebar: React.FC<{
   const [showOrderedListOptions, setShowOrderedListOptions] = useState(false);
   const [showFontStyleOptions, setShowFontStyleOptions] = useState(false);
   const [showFontSizeOptions, setShowFontSizeOptions] = useState(false);
+  const [showColorPicker, setShowColorPicker] = useState(false);
 
   const listOptionsRef = useRef<HTMLDivElement>(null);
   const fontOptionsRef = useRef<HTMLDivElement>(null);
+  const colorPickerRef = useRef<HTMLDivElement>(null);
   
   const fontStyles = ["Arial", "Calibri", "Cambria", "Garamond", "Georgia", "Helvetica", "Inter", "Lato", "Merriweather", "Montserrat", "Open Sans", "Roboto", "Source Sans Pro", "Times New Roman", "Trebuchet MS", "Verdana"];
   const fontSizes = [8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 28, 32, 36, 48, 72];
@@ -102,6 +114,9 @@ const Sidebar: React.FC<{
         if (fontOptionsRef.current && !fontOptionsRef.current.contains(event.target as Node)) {
             setShowFontStyleOptions(false);
             setShowFontSizeOptions(false);
+        }
+        if (colorPickerRef.current && !colorPickerRef.current.contains(event.target as Node)) {
+            setShowColorPicker(false);
         }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -129,6 +144,12 @@ const Sidebar: React.FC<{
       onApplyFormat('insertOrderedList', style);
       setShowOrderedListOptions(false);
   };
+  
+  const handleColorApply = (command: 'foreColor' | 'backColor', color: string) => {
+      onApplyFormat(command, color);
+      setShowColorPicker(false);
+  };
+
 
   const addSection = (sectionTitle: string) => {
     if (!resumeData.sections.find(s => s.title.toLowerCase() === sectionTitle.toLowerCase())) {
@@ -218,10 +239,68 @@ const Sidebar: React.FC<{
           <div className="space-y-8">
             <div>
               <h3 className="text-lg font-semibold text-slate-800 mb-4">Text & Paragraph</h3>
-              <div className="flex items-center space-x-1 p-1 bg-slate-100 rounded-lg" ref={listOptionsRef}>
+              <div className="relative flex items-center space-x-1 p-1 bg-slate-100 rounded-lg" ref={listOptionsRef}>
                   <button onMouseDown={(e) => e.preventDefault()} onClick={() => onApplyFormat('bold')} className="p-2 rounded-md hover:bg-slate-200 text-slate-600"><Icons.BoldIcon className="w-5 h-5"/></button>
                   <button onMouseDown={(e) => e.preventDefault()} onClick={() => onApplyFormat('italic')} className="p-2 rounded-md hover:bg-slate-200 text-slate-600"><Icons.ItalicIcon className="w-5 h-5"/></button>
                   <button onMouseDown={(e) => e.preventDefault()} onClick={() => onApplyFormat('underline')} className="p-2 rounded-md hover:bg-slate-200 text-slate-600"><Icons.UnderlineIcon className="w-5 h-5"/></button>
+                  
+                  <div ref={colorPickerRef}>
+                      <button 
+                        onMouseDown={(e) => e.preventDefault()} 
+                        onClick={() => setShowColorPicker(prev => !prev)} 
+                        className="p-2 rounded-md hover:bg-slate-200 text-slate-600"
+                        title="Text Color"
+                      >
+                          <Icons.TextColorIcon className="w-5 h-5"/>
+                      </button>
+                      {showColorPicker && (
+                          <div className="absolute z-20 top-full mt-2 left-1/2 -translate-x-1/2 bg-white border border-slate-200 rounded-md shadow-lg p-3 w-[310px]">
+                            <div className="flex gap-4">
+                                <div className="flex-1">
+                                    <h4 className="text-xs font-semibold text-slate-600 mb-2 text-center">Background color</h4>
+                                    <div className="space-y-1">
+                                        <div className="grid grid-cols-9 gap-px">
+                                          {colorPalette.grayscale.map(c => <button key={c} onMouseDown={(e) => e.preventDefault()} onClick={() => handleColorApply('backColor', c)} className="w-6 h-6 rounded-sm" style={{backgroundColor: c, border: c==='#ffffff' ? '1px solid #ddd' : 'none'}}></button>)}
+                                        </div>
+                                        <div className="grid grid-cols-8 gap-px">
+                                          {colorPalette.vibrant.map(c => <button key={c} onMouseDown={(e) => e.preventDefault()} onClick={() => handleColorApply('backColor', c)} className="w-6 h-6 rounded-sm" style={{backgroundColor: c}}></button>)}
+                                        </div>
+                                        <div className="grid grid-cols-8 gap-px">
+                                          {colorPalette.light.map(c => <button key={c} onMouseDown={(e) => e.preventDefault()} onClick={() => handleColorApply('backColor', c)} className="w-6 h-6 rounded-sm" style={{backgroundColor: c}}></button>)}
+                                        </div>
+                                        <div className="grid grid-cols-8 gap-px">
+                                          {colorPalette.medium.map(c => <button key={c} onMouseDown={(e) => e.preventDefault()} onClick={() => handleColorApply('backColor', c)} className="w-6 h-6 rounded-sm" style={{backgroundColor: c}}></button>)}
+                                        </div>
+                                        <div className="grid grid-cols-8 gap-px">
+                                          {colorPalette.dark.map(c => <button key={c} onMouseDown={(e) => e.preventDefault()} onClick={() => handleColorApply('backColor', c)} className="w-6 h-6 rounded-sm" style={{backgroundColor: c}}></button>)}
+                                        </div>
+                                    </div>
+                                </div>
+                                 <div className="flex-1">
+                                    <h4 className="text-xs font-semibold text-slate-600 mb-2 text-center">Text color</h4>
+                                     <div className="space-y-1">
+                                        <div className="grid grid-cols-9 gap-px">
+                                          {colorPalette.grayscale.map(c => <button key={c} onMouseDown={(e) => e.preventDefault()} onClick={() => handleColorApply('foreColor', c)} className="w-6 h-6 rounded-sm" style={{backgroundColor: c, border: c==='#ffffff' ? '1px solid #ddd' : 'none'}}></button>)}
+                                        </div>
+                                        <div className="grid grid-cols-8 gap-px">
+                                          {colorPalette.vibrant.map(c => <button key={c} onMouseDown={(e) => e.preventDefault()} onClick={() => handleColorApply('foreColor', c)} className="w-6 h-6 rounded-sm" style={{backgroundColor: c}}></button>)}
+                                        </div>
+                                        <div className="grid grid-cols-8 gap-px">
+                                          {colorPalette.light.map(c => <button key={c} onMouseDown={(e) => e.preventDefault()} onClick={() => handleColorApply('foreColor', c)} className="w-6 h-6 rounded-sm" style={{backgroundColor: c}}></button>)}
+                                        </div>
+                                        <div className="grid grid-cols-8 gap-px">
+                                          {colorPalette.medium.map(c => <button key={c} onMouseDown={(e) => e.preventDefault()} onClick={() => handleColorApply('foreColor', c)} className="w-6 h-6 rounded-sm" style={{backgroundColor: c}}></button>)}
+                                        </div>
+                                        <div className="grid grid-cols-8 gap-px">
+                                          {colorPalette.dark.map(c => <button key={c} onMouseDown={(e) => e.preventDefault()} onClick={() => handleColorApply('foreColor', c)} className="w-6 h-6 rounded-sm" style={{backgroundColor: c}}></button>)}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                          </div>
+                      )}
+                  </div>
+                  
                   <div className="w-px h-6 bg-slate-300"></div>
                   
                   <div className="relative">
@@ -282,14 +361,6 @@ const Sidebar: React.FC<{
                   <button onMouseDown={(e) => e.preventDefault()} onClick={() => onApplyFormat('outdent')} className="p-2 rounded-md hover:bg-slate-200 text-slate-600"><Icons.OutdentIcon className="w-5 h-5"/></button>
                   <button onMouseDown={(e) => e.preventDefault()} onClick={() => onApplyFormat('indent')} className="p-2 rounded-md hover:bg-slate-200 text-slate-600"><Icons.IndentIcon className="w-5 h-5"/></button>
               </div>
-            </div>
-             <div>
-                <h3 className="text-lg font-semibold text-slate-800 mb-4">Accent Colors</h3>
-                <div className="flex flex-wrap gap-3">
-                    {accentColors.map(color => (
-                        <button key={color} onClick={() => onFormattingChange('accentColor', color)} className={`w-7 h-7 rounded-full transition-transform transform hover:scale-110 ${formatting.accentColor === color ? 'ring-2 ring-offset-2 ring-blue-500' : ''} ${color === '#FFFFFF' ? 'border border-slate-300' : ''}`} style={{ backgroundColor: color }}></button>
-                    ))}
-                </div>
             </div>
             <div className="space-y-6">
                 <h3 className="text-lg font-semibold text-slate-800">Alignment & Layout</h3>
@@ -774,6 +845,58 @@ const EditorPage: React.FC<{ onBackToHome: () => void }> = ({ onBackToHome }) =>
   }, [setResumeData]);
 
   const handleApplyFormat = (command: string, value?: string) => {
+    if (command.startsWith('justify')) {
+        const selection = window.getSelection();
+        if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return;
+
+        const range = selection.getRangeAt(0);
+        const contentEditable = range.commonAncestorContainer.parentElement?.closest<HTMLElement>('[contenteditable="true"]');
+        if (!contentEditable) return;
+
+        const alignValue = command.replace('justify', '').toLowerCase();
+
+        const getContainingBlock = (node: Node | null, root: HTMLElement): HTMLElement | null => {
+            while (node && node !== root) {
+                if (node.nodeType === Node.ELEMENT_NODE) {
+                    const el = node as HTMLElement;
+                    const tagName = el.tagName.toLowerCase();
+                    if (['p', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div'].includes(tagName)) {
+                        if (el === root) return null;
+                        return el;
+                    }
+                }
+                node = node.parentNode;
+            }
+            return null;
+        };
+        
+        const startBlock = getContainingBlock(range.startContainer, contentEditable);
+        const endBlock = getContainingBlock(range.endContainer, contentEditable);
+
+        if (!startBlock || !endBlock) return;
+
+        const allBlocksInEditor = Array.from(contentEditable.querySelectorAll('p, li, h1, h2, h3, h4, h5, h6, div'));
+        const startIndex = allBlocksInEditor.indexOf(startBlock);
+        const endIndex = allBlocksInEditor.indexOf(endBlock);
+
+        if (startIndex !== -1 && endIndex !== -1 && startIndex <= endIndex) {
+            const blocksToStyle = allBlocksInEditor.slice(startIndex, endIndex + 1);
+            
+            blocksToStyle.forEach(block => {
+                if (!['ul', 'ol'].includes(block.tagName.toLowerCase())) {
+                    // FIX: Cast block to HTMLElement to access the style property.
+                    (block as HTMLElement).style.textAlign = alignValue;
+                }
+            });
+
+            const fieldKey = contentEditable.dataset.fieldKey;
+            if (fieldKey) {
+                handleContentChange(fieldKey, contentEditable.innerHTML);
+            }
+        }
+        return;
+    }
+
     if ((command === 'insertUnorderedList' || command === 'insertOrderedList') && value) {
         const listType = command === 'insertUnorderedList' ? 'UL' : 'OL';
         const selection = window.getSelection();
