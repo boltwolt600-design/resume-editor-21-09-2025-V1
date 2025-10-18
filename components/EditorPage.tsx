@@ -71,9 +71,14 @@ const Sidebar: React.FC<{
   handleAiAction: (action: 'ats' | 'enhance' | 'gap') => void;
   isAiLoading: boolean;
   formatting: FormattingOptions;
-  onFormattingChange: (key: keyof FormattingOptions, value: any) => void;
+  onFormattingChange: (key: Exclude<keyof FormattingOptions, 'fontSize'>, value: any) => void;
+  onFontSizeChange: (value: number) => void;
+  sliderFontSize: number;
   onApplyFormat: (command: string, value?: string) => void;
-}> = ({ activeTab, setActiveTab, resumeData, setResumeData, aiSuggestions, handleAiAction, isAiLoading, formatting, onFormattingChange, onApplyFormat }) => {
+}> = ({ 
+    activeTab, setActiveTab, resumeData, setResumeData, aiSuggestions, handleAiAction, 
+    isAiLoading, formatting, onFormattingChange, onFontSizeChange, sliderFontSize, onApplyFormat 
+}) => {
   const tabs: SidebarTab[] = ['Design', 'Formatting', 'Sections', 'AI Copilot'];
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [showUnorderedListOptions, setShowUnorderedListOptions] = useState(false);
@@ -311,8 +316,8 @@ const Sidebar: React.FC<{
                     </select>
                 </div>
                 <div>
-                    <label htmlFor="font-size" className="text-sm font-medium text-slate-700 mb-2 block">Font Size: {formatting.fontSize}pt</label>
-                    <input id="font-size" type="range" min="9" max="14" step="0.5" value={formatting.fontSize} onChange={e => onFormattingChange('fontSize', parseFloat(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+                    <label htmlFor="font-size" className="text-sm font-medium text-slate-700 mb-2 block">Font Size: {Math.round(sliderFontSize * 10) / 10}pt</label>
+                    <input id="font-size" type="range" min="9" max="14" step="0.5" value={sliderFontSize} onChange={e => onFontSizeChange(parseFloat(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
                 </div>
             </div>
           </div>
@@ -610,8 +615,55 @@ const EditorPage: React.FC<{ onBackToHome: () => void }> = ({ onBackToHome }) =>
     fontSize: 11,
   });
 
-  const handleFormattingChange = (key: keyof FormattingOptions, value: any) => {
+  // State for the font size slider's visual value
+  const [sliderFontSize, setSliderFontSize] = useState(formatting.fontSize);
+
+  // Sync slider value with global formatting state when it changes
+  useEffect(() => {
+    setSliderFontSize(formatting.fontSize);
+  }, [formatting.fontSize]);
+
+
+  const handleFormattingChange = (key: Exclude<keyof FormattingOptions, 'fontSize'>, value: any) => {
     setFormatting(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleApplyStyleToSelection = (style: React.CSSProperties): boolean => {
+      const selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return false;
+
+      const range = selection.getRangeAt(0);
+      const span = document.createElement('span');
+      Object.assign(span.style, style);
+
+      try {
+          range.surroundContents(span);
+          selection.collapseToEnd();
+          return true;
+      } catch (e) {
+          console.error("Could not apply style. The selection may be too complex.", e);
+          alert("Could not apply style. The selection may be too complex. Please try selecting a smaller piece of text within a single paragraph.");
+          return false;
+      }
+  }
+
+  const handleFontSizeChange = (newSize: number) => {
+      setSliderFontSize(newSize);
+
+      const selection = window.getSelection();
+      if (selection && !selection.isCollapsed) {
+          const success = handleApplyStyleToSelection({ fontSize: `${newSize}pt` });
+          if (success) {
+              const activeElement = document.activeElement as HTMLElement;
+              if (activeElement?.isContentEditable && activeElement.dataset.fieldKey) {
+                  handleContentChange(activeElement.dataset.fieldKey, activeElement.innerHTML);
+              }
+          } else {
+              setSliderFontSize(formatting.fontSize); 
+          }
+      } else {
+          setFormatting(prev => ({ ...prev, fontSize: newSize }));
+      }
   };
   
   const handleContentChange = useCallback((
@@ -739,6 +791,8 @@ const EditorPage: React.FC<{ onBackToHome: () => void }> = ({ onBackToHome }) =>
         isAiLoading={isAiLoading}
         formatting={formatting}
         onFormattingChange={handleFormattingChange}
+        onFontSizeChange={handleFontSizeChange}
+        sliderFontSize={sliderFontSize}
         onApplyFormat={handleApplyFormat}
       />
       <div className="flex flex-col flex-1">
