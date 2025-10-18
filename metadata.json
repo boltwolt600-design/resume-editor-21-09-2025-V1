@@ -1,0 +1,5 @@
+{
+  "name": "Smart Resume Studio",
+  "description": "An AI-powered resume editor that helps you create professional, ATS-optimized resumes with ease. Import an existing resume or start from scratch, and leverage AI suggestions to enhance your content.",
+  "requestFramePermissions": []
+}
