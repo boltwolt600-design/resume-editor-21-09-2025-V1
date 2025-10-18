@@ -14,7 +14,51 @@ const templates = [
   { name: 'Creative Photo', color: 'bg-purple-500' },
 ];
 
-const accentColors = ['#000000', '#4A90E2', '#50E3C2', '#F5A623', '#D0021B', '#9013FE'];
+const accentColors = ['#4285F4', '#EA4335', '#34A853', '#FBBC05', '#8B5CF6', '#718096', '#000000', '#FFFFFF'];
+
+// Custom hook for managing state history
+const useHistory = <T,>(initialState: T) => {
+    const [history, setHistory] = useState<T[]>([initialState]);
+    const [currentIndex, setCurrentIndex] = useState(0);
+
+    const setState = useCallback((action: T | ((prevState: T) => T)) => {
+        const newState = action instanceof Function ? action(history[currentIndex]) : action;
+
+        if (JSON.stringify(newState) === JSON.stringify(history[currentIndex])) {
+            return; // No change, don't add to history
+        }
+
+        const newHistory = history.slice(0, currentIndex + 1);
+        newHistory.push(newState);
+
+        setHistory(newHistory);
+        setCurrentIndex(newHistory.length - 1);
+    }, [history, currentIndex]);
+
+    const undo = useCallback(() => {
+        if (currentIndex > 0) {
+            setCurrentIndex(currentIndex - 1);
+        }
+    }, [currentIndex]);
+
+    const canUndo = currentIndex > 0;
+
+    return {
+        state: history[currentIndex],
+        setState,
+        undo,
+        canUndo,
+    };
+};
+
+interface FormattingOptions {
+    accentColor: string;
+    textAlign: 'left' | 'center' | 'right';
+    lineSpacing: number;
+    sideMargins: number;
+    fontStyle: string;
+    fontSize: number;
+}
 
 
 // Sub-components defined outside the main component to prevent re-creation on re-renders
@@ -22,11 +66,13 @@ const Sidebar: React.FC<{
   activeTab: SidebarTab;
   setActiveTab: (tab: SidebarTab) => void;
   resumeData: ResumeData;
-  setResumeData: React.Dispatch<React.SetStateAction<ResumeData>>;
+  setResumeData: (action: ResumeData | ((prevState: ResumeData) => ResumeData)) => void;
   aiSuggestions: Aisuggestions;
   handleAiAction: (action: 'ats' | 'enhance' | 'gap') => void;
   isAiLoading: boolean;
-}> = ({ activeTab, setActiveTab, resumeData, setResumeData, aiSuggestions, handleAiAction, isAiLoading }) => {
+  formatting: FormattingOptions;
+  onFormattingChange: (key: keyof FormattingOptions, value: any) => void;
+}> = ({ activeTab, setActiveTab, resumeData, setResumeData, aiSuggestions, handleAiAction, isAiLoading, formatting, onFormattingChange }) => {
   const tabs: SidebarTab[] = ['Design', 'Formatting', 'Sections', 'AI Copilot'];
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
@@ -93,17 +139,12 @@ const Sidebar: React.FC<{
 
 
   return (
-    <div className="w-80 bg-white border-r border-slate-200 flex flex-col h-full">
-      <div className="flex border-b border-slate-200">
-        {tabs.map(tab => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`flex-1 py-3 px-2 text-sm font-semibold transition-colors ${activeTab === tab ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-500 hover:bg-slate-100'}`}
-          >
-            {tab}
-          </button>
-        ))}
+    <div className="w-96 bg-white border-r border-slate-200 flex flex-col h-full">
+      <div className="grid grid-cols-2 border-b border-slate-200">
+        <button onClick={() => setActiveTab('Design')} className={`py-3 px-2 text-sm font-semibold transition-colors ${activeTab === 'Design' ? 'text-blue-600 bg-slate-50' : 'text-slate-500 hover:bg-slate-100'}`}>Design</button>
+        <button onClick={() => setActiveTab('Formatting')} className={`py-3 px-2 text-sm font-semibold transition-colors ${activeTab === 'Formatting' ? 'text-blue-600 bg-slate-50' : 'text-slate-500 hover:bg-slate-100'}`}>Formatting</button>
+        <button onClick={() => setActiveTab('Sections')} className={`py-3 px-2 text-sm font-semibold transition-colors ${activeTab === 'Sections' ? 'text-blue-600 bg-slate-50' : 'text-slate-500 hover:bg-slate-100'}`}>Sections</button>
+        <button onClick={() => setActiveTab('AI Copilot')} className={`py-3 px-2 text-sm font-semibold transition-colors ${activeTab === 'AI Copilot' ? 'text-blue-600 bg-slate-50' : 'text-slate-500 hover:bg-slate-100'}`}>AI Copilot</button>
       </div>
       <div className="flex-1 overflow-y-auto p-6">
         {activeTab === 'Design' && (
@@ -120,37 +161,71 @@ const Sidebar: React.FC<{
           </div>
         )}
         {activeTab === 'Formatting' && (
-          <div className="space-y-6">
+          <div className="space-y-8">
             <div>
-              <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3">Text & Paragraph</h3>
-              <div className="flex items-center space-x-2 p-1 bg-slate-100 rounded-md">
-                  <button className="p-2 rounded hover:bg-slate-200"><Icons.BoldIcon className="w-5 h-5"/></button>
-                  <button className="p-2 rounded hover:bg-slate-200"><Icons.ItalicIcon className="w-5 h-5"/></button>
-                  <button className="p-2 rounded hover:bg-slate-200"><Icons.UnderlineIcon className="w-5 h-5"/></button>
+              <h3 className="text-lg font-semibold text-slate-800 mb-4">Text & Paragraph</h3>
+              <div className="flex items-center space-x-1 p-1 bg-slate-100 rounded-lg justify-around">
+                  <button className="p-2 rounded-md hover:bg-slate-200"><Icons.BoldIcon className="w-5 h-5"/></button>
+                  <button className="p-2 rounded-md hover:bg-slate-200"><Icons.ItalicIcon className="w-5 h-5"/></button>
+                  <button className="p-2 rounded-md hover:bg-slate-200"><Icons.UnderlineIcon className="w-5 h-5"/></button>
                   <div className="w-px h-6 bg-slate-300"></div>
-                  <button className="p-2 rounded hover:bg-slate-200"><Icons.AlignLeftIcon className="w-5 h-5"/></button>
-                  <button className="p-2 rounded hover:bg-slate-200"><Icons.AlignCenterIcon className="w-5 h-5"/></button>
-                  <button className="p-2 rounded hover:bg-slate-200"><Icons.AlignRightIcon className="w-5 h-5"/></button>
+                  <button className="p-2 rounded-md hover:bg-slate-200"><Icons.ListIcon className="w-5 h-5"/></button>
+                  <button className="p-2 rounded-md hover:bg-slate-200"><Icons.ListOrderedIcon className="w-5 h-5"/></button>
+                  <div className="w-px h-6 bg-slate-300"></div>
+                  <button className="p-2 rounded-md hover:bg-slate-200"><Icons.OutdentIcon className="w-5 h-5"/></button>
+                  <button className="p-2 rounded-md hover:bg-slate-200"><Icons.IndentIcon className="w-5 h-5"/></button>
               </div>
             </div>
-            <div>
-              <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3">Accent Colors</h3>
-              <div className="flex space-x-2">
-                {accentColors.map(color => <button key={color} className="w-6 h-6 rounded-full border border-slate-300" style={{ backgroundColor: color }}></button>)}
-              </div>
+             <div>
+                <h3 className="text-lg font-semibold text-slate-800 mb-4">Accent Colors</h3>
+                <div className="flex flex-wrap gap-3">
+                    {accentColors.map(color => (
+                        <button key={color} onClick={() => onFormattingChange('accentColor', color)} className={`w-7 h-7 rounded-full transition-transform transform hover:scale-110 ${formatting.accentColor === color ? 'ring-2 ring-offset-2 ring-blue-500' : ''} ${color === '#FFFFFF' ? 'border border-slate-300' : ''}`} style={{ backgroundColor: color }}></button>
+                    ))}
+                </div>
             </div>
-            <div>
-              <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3">Line Spacing</h3>
-              <input type="range" min="1" max="2" step="0.1" defaultValue="1.4" className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" />
+            <div className="space-y-6">
+                <h3 className="text-lg font-semibold text-slate-800">Alignment & Layout</h3>
+                <div>
+                    <label className="text-sm font-medium text-slate-700 mb-2 block">Text Alignment</label>
+                    <div className="flex items-center bg-slate-100 rounded-lg p-1">
+                        {(['left', 'center', 'right'] as const).map(align => (
+                            <button key={align} onClick={() => onFormattingChange('textAlign', align)} className={`flex-1 p-2 rounded-md transition-colors ${formatting.textAlign === align ? 'bg-white shadow-sm' : 'hover:bg-slate-200'}`}>
+                                {align === 'left' && <Icons.AlignLeftIcon className="w-5 h-5 mx-auto"/>}
+                                {align === 'center' && <Icons.AlignCenterIcon className="w-5 h-5 mx-auto"/>}
+                                {align === 'right' && <Icons.AlignRightIcon className="w-5 h-5 mx-auto"/>}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+                 <div>
+                    <label htmlFor="line-spacing" className="text-sm font-medium text-slate-700 mb-2 block">Line Spacing: {formatting.lineSpacing}</label>
+                    <input id="line-spacing" type="range" min="1" max="2" step="0.1" value={formatting.lineSpacing} onChange={e => onFormattingChange('lineSpacing', parseFloat(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+                </div>
+                 <div>
+                    <label htmlFor="side-margins" className="text-sm font-medium text-slate-700 mb-2 block">Side Margins</label>
+                    <div className="flex items-center space-x-3">
+                        <input id="side-margins" type="range" min="10" max="30" step="1" value={formatting.sideMargins} onChange={e => onFormattingChange('sideMargins', parseInt(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+                        <div className="p-2 border border-slate-300 rounded-md text-sm w-20 text-center bg-white">{formatting.sideMargins}mm</div>
+                    </div>
+                </div>
             </div>
-            <div>
-              <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3">Font Formatting</h3>
-              <select className="w-full p-2 border border-slate-300 rounded-md text-sm">
-                <option>Inter</option>
-                <option>Roboto</option>
-                <option>Lato</option>
-              </select>
-              <input type="range" min="10" max="16" step="0.5" defaultValue="11" className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer mt-4" />
+             <div className="space-y-5">
+                <h3 className="text-lg font-semibold text-slate-800">Font Formatting</h3>
+                 <div>
+                    <label htmlFor="font-style" className="text-sm font-medium text-slate-700 mb-2 block">Font Style</label>
+                    <select id="font-style" value={formatting.fontStyle} onChange={e => onFormattingChange('fontStyle', e.target.value)} className="w-full p-2 border border-slate-300 rounded-md text-sm bg-white">
+                        <option>Inter</option>
+                        <option>Roboto</option>
+                        <option>Lato</option>
+                        <option>Merriweather</option>
+                        <option>Source Sans Pro</option>
+                    </select>
+                </div>
+                <div>
+                    <label htmlFor="font-size" className="text-sm font-medium text-slate-700 mb-2 block">Font Size: {formatting.fontSize}pt</label>
+                    <input id="font-size" type="range" min="9" max="14" step="0.5" value={formatting.fontSize} onChange={e => onFormattingChange('fontSize', parseFloat(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+                </div>
             </div>
           </div>
         )}
@@ -227,8 +302,9 @@ const Sidebar: React.FC<{
 
 const ResumePreview: React.FC<{
   resumeData: ResumeData;
-  setResumeData: React.Dispatch<React.SetStateAction<ResumeData>>;
-}> = ({ resumeData, setResumeData }) => {
+  setResumeData: (action: ResumeData | ((prevState: ResumeData) => ResumeData)) => void;
+  formatting: FormattingOptions;
+}> = ({ resumeData, setResumeData, formatting }) => {
     const [paginatedSections, setPaginatedSections] = useState<ResumeSection[][]>([resumeData.sections]);
 
     useEffect(() => {
@@ -236,11 +312,17 @@ const ResumePreview: React.FC<{
         measurementContainer.style.position = 'absolute';
         measurementContainer.style.left = '-9999px';
         measurementContainer.style.top = '-9999px';
-        measurementContainer.className = "w-[8.5in] p-12 text-[11pt] font-[Inter,sans-serif] text-slate-800";
+        measurementContainer.style.width = '8.5in';
         document.body.appendChild(measurementContainer);
 
-        const MeasurementContent: React.FC<{ data: ResumeData }> = ({ data }) => (
-            <>
+        const MeasurementContent: React.FC<{ data: ResumeData, format: FormattingOptions }> = ({ data, format }) => (
+            <div style={{
+                padding: `3rem ${format.sideMargins}mm`,
+                fontSize: `${format.fontSize}pt`,
+                fontFamily: `'${format.fontStyle}', sans-serif`,
+                lineHeight: format.lineSpacing,
+                textAlign: format.textAlign
+            }} className="text-slate-800">
                 <div className="text-center border-b pb-4 border-slate-300 resume-header-measure">
                     <div className="text-3xl font-bold uppercase tracking-wider">{data.name}</div>
                     <div className="text-md mt-1">{data.title}</div>
@@ -251,23 +333,22 @@ const ResumePreview: React.FC<{
                 <div className="mt-6 space-y-5">
                     {data.sections.map(section => (
                         <div key={section.id} data-section-id={section.id} className="resume-section-measure">
-                            <h2 className="text-sm font-bold uppercase tracking-widest border-b-2 border-slate-700 pb-1 mb-2">{section.title}</h2>
+                            <h2 className="text-sm font-bold uppercase tracking-widest border-b-2 pb-1 mb-2" style={{ borderColor: format.accentColor }}>{section.title}</h2>
                             <div style={{ whiteSpace: 'pre-wrap' }}>{section.content || ' '}</div>
                         </div>
                     ))}
                 </div>
-            </>
+            </div>
         );
 
         const root = ReactDOM.createRoot(measurementContainer);
-        root.render(<MeasurementContent data={resumeData} />);
+        root.render(<MeasurementContent data={resumeData} format={formatting} />);
 
         const timeoutId = setTimeout(() => {
             const headerEl = measurementContainer.querySelector('.resume-header-measure') as HTMLElement;
             const sectionEls = Array.from(measurementContainer.querySelectorAll('.resume-section-measure')) as HTMLElement[];
             
-            // 11in page height @ 96dpi minus 3rem padding top/bottom (96px) and an additional 3rem (48px) for footer space.
-            const maxContentHeight = 1056 - 144; 
+            const maxContentHeight = (11 * 96) - (2 * 3 * 16); // 11in page height @ 96dpi minus 3rem padding top/bottom
 
             if (!headerEl || sectionEls.length < resumeData.sections.length) {
                  root.unmount();
@@ -277,21 +358,23 @@ const ResumePreview: React.FC<{
 
             const newPages: ResumeSection[][] = [];
             let currentPage: ResumeSection[] = [];
-            let currentPageHeight = headerEl.offsetHeight;
+            let currentPageHeight = headerEl.offsetHeight + 24; // Page 1 starts with header height + mt-6 (24px).
+            const spaceBetweenSections = 20; // from space-y-5 which is 1.25rem
 
             resumeData.sections.forEach(section => {
                 const sectionEl = sectionEls.find(el => el.dataset.sectionId === section.id);
                 if (!sectionEl) return;
                 
                 const sectionHeight = sectionEl.offsetHeight;
-                
-                if (currentPageHeight + sectionHeight > maxContentHeight && currentPage.length > 0) {
+                const heightWithMargin = sectionHeight + (currentPage.length > 0 ? spaceBetweenSections : 0);
+
+                if (currentPageHeight + heightWithMargin > maxContentHeight && currentPage.length > 0) {
                     newPages.push(currentPage);
                     currentPage = [section];
-                    currentPageHeight = sectionHeight; // Height for the new page starts with its first section
+                    currentPageHeight = sectionHeight; // New page starts with just the section height.
                 } else {
                     currentPage.push(section);
-                    currentPageHeight += sectionHeight;
+                    currentPageHeight += heightWithMargin;
                 }
             });
 
@@ -316,7 +399,7 @@ const ResumePreview: React.FC<{
             }
         };
 
-    }, [resumeData]);
+    }, [resumeData, formatting]);
 
     const handleContentChange = (
         field: keyof ResumeData | `contact.${keyof ResumeData['contact']}` | `section.${string}`,
@@ -360,11 +443,21 @@ const ResumePreview: React.FC<{
 
     return (
         <div className="flex-1 p-10 bg-slate-100 overflow-y-auto">
+             <style>{`
+                @import url('https://fonts.googleapis.com/css2?family=${formatting.fontStyle.replace(/ /g, '+')}:wght@400;700&display=swap');
+             `}</style>
             {paginatedSections.map((pageSections, pageIndex) => (
                 <div 
                     key={pageIndex} 
                     id={`resume-page-${pageIndex}`} 
-                    className="w-[8.5in] h-[11in] bg-white shadow-lg mx-auto p-12 text-[11pt] font-[Inter,sans-serif] text-slate-800 mb-8"
+                    className="w-[8.5in] h-[11in] bg-white shadow-lg mx-auto text-slate-800 mb-8 overflow-hidden"
+                    style={{
+                        padding: `3rem ${formatting.sideMargins}mm`,
+                        fontSize: `${formatting.fontSize}pt`,
+                        fontFamily: `'${formatting.fontStyle}', sans-serif`,
+                        lineHeight: formatting.lineSpacing,
+                        textAlign: formatting.textAlign,
+                    }}
                 >
                     {pageIndex === 0 && (
                         <div className="text-center border-b pb-4 border-slate-300">
@@ -382,7 +475,7 @@ const ResumePreview: React.FC<{
                     <div className={`space-y-5 ${pageIndex === 0 ? 'mt-6' : ''}`}>
                         {pageSections.map(section => (
                             <div key={section.id}>
-                                <h2 className="text-sm font-bold uppercase tracking-widest border-b-2 border-slate-700 pb-1 mb-2">{section.title}</h2>
+                                <h2 className="text-sm font-bold uppercase tracking-widest border-b-2 pb-1 mb-2" style={{ borderColor: formatting.accentColor }}>{section.title}</h2>
                                 <EditableField fieldKey={`section.${section.id}`} value={section.content} isTextArea={true} />
                             </div>
                         ))}
@@ -395,8 +488,14 @@ const ResumePreview: React.FC<{
 
 // Main EditorPage Component
 const EditorPage: React.FC<{ onBackToHome: () => void }> = ({ onBackToHome }) => {
-  const [activeTab, setActiveTab] = useState<SidebarTab>('Design');
-  const [resumeData, setResumeData] = useState<ResumeData>(DEFAULT_RESUME_DATA);
+  const [activeTab, setActiveTab] = useState<SidebarTab>('Formatting');
+  const { 
+      state: resumeData, 
+      setState: setResumeData, 
+      undo, 
+      canUndo 
+  } = useHistory<ResumeData>(DEFAULT_RESUME_DATA);
+  
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiSuggestions, setAiSuggestions] = useState<Aisuggestions>({
       atsScore: 0,
@@ -404,6 +503,19 @@ const EditorPage: React.FC<{ onBackToHome: () => void }> = ({ onBackToHome }) =>
       enhancedText: '',
       gapJustification: ''
   });
+
+  const [formatting, setFormatting] = useState<FormattingOptions>({
+    accentColor: '#000000',
+    textAlign: 'left',
+    lineSpacing: 1.4,
+    sideMargins: 20,
+    fontStyle: 'Inter',
+    fontSize: 11,
+  });
+
+  const handleFormattingChange = (key: keyof FormattingOptions, value: any) => {
+    setFormatting(prev => ({ ...prev, [key]: value }));
+  };
 
   const handleAiAction = async (action: 'ats' | 'enhance' | 'gap') => {
       setIsAiLoading(true);
@@ -445,6 +557,8 @@ const EditorPage: React.FC<{ onBackToHome: () => void }> = ({ onBackToHome }) =>
         aiSuggestions={aiSuggestions}
         handleAiAction={handleAiAction}
         isAiLoading={isAiLoading}
+        formatting={formatting}
+        onFormattingChange={handleFormattingChange}
       />
       <div className="flex flex-col flex-1">
         <header className="flex items-center justify-between p-3 bg-white border-b border-slate-200">
@@ -454,12 +568,18 @@ const EditorPage: React.FC<{ onBackToHome: () => void }> = ({ onBackToHome }) =>
           </div>
           <div className="flex items-center space-x-2">
             <button onClick={onBackToHome} className="px-4 py-2 text-sm font-semibold text-slate-600 bg-slate-100 rounded-md hover:bg-slate-200 transition-colors">Home</button>
-            <button className="px-4 py-2 text-sm font-semibold text-slate-600 bg-slate-100 rounded-md hover:bg-slate-200 transition-colors">Undo</button>
+            <button 
+              onClick={undo} 
+              disabled={!canUndo} 
+              className="px-4 py-2 text-sm font-semibold text-slate-600 bg-slate-100 rounded-md hover:bg-slate-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Undo
+            </button>
             <button className="px-4 py-2 text-sm font-semibold text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors">Save</button>
             <button className="px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors">Export</button>
           </div>
         </header>
-        <ResumePreview resumeData={resumeData} setResumeData={setResumeData} />
+        <ResumePreview resumeData={resumeData} setResumeData={setResumeData} formatting={formatting} />
       </div>
     </div>
   );

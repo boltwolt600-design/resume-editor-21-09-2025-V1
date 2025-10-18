@@ -102,3 +102,31 @@ export const CopyIcon = ({ className }: { className?: string }) => (
     <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
   </svg>
 );
+
+export const ListIcon = ({ className }: { className?: string }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <line x1="8" x2="21" y1="6" y2="6" /><line x1="8" x2="21" y1="12" y2="12" /><line x1="8" x2="21" y1="18" y2="18" />
+        <line x1="3" x2="3.01" y1="6" y2="6" /><line x1="3" x2="3.01" y1="12" y2="12" /><line x1="3" x2="3.01" y1="18" y2="18" />
+    </svg>
+);
+
+export const ListOrderedIcon = ({ className }: { className?: string }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <line x1="10" x2="21" y1="6" y2="6" /><line x1="10" x2="21" y1="12" y2="12" /><line x1="10" x2="21" y1="18" y2="18" />
+        <path d="M4 6h1v4" /><path d="M4 10h2" /><path d="m3 18 3-3-3-3" />
+    </svg>
+);
+
+export const IndentIcon = ({ className }: { className?: string }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <polyline points="15 17 20 12 15 7" /><line x1="4" y1="12" x2="20" y2="12" />
+        <line x1="4" y1="17" x2="12" y2="17" /><line x1="4" y1="7" x2="12" y2="7" />
+    </svg>
+);
+
+export const OutdentIcon = ({ className }: { className?: string }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <polyline points="9 17 4 12 9 7" /><line x1="20" y1="12" x2="4" y2="12" />
+        <line x1="20" y1="17" x2="12" y2="17" /><line x1="20" y1="7" x2="12" y2="7" />
+    </svg>
+);
