@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import { ResumeData, SidebarTab, ResumeSection, Aisuggestions } from '../types';
@@ -72,7 +73,8 @@ const Sidebar: React.FC<{
   isAiLoading: boolean;
   formatting: FormattingOptions;
   onFormattingChange: (key: keyof FormattingOptions, value: any) => void;
-}> = ({ activeTab, setActiveTab, resumeData, setResumeData, aiSuggestions, handleAiAction, isAiLoading, formatting, onFormattingChange }) => {
+  onApplyFormat: (command: string) => void;
+}> = ({ activeTab, setActiveTab, resumeData, setResumeData, aiSuggestions, handleAiAction, isAiLoading, formatting, onFormattingChange, onApplyFormat }) => {
   const tabs: SidebarTab[] = ['Design', 'Formatting', 'Sections', 'AI Copilot'];
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
@@ -82,7 +84,7 @@ const Sidebar: React.FC<{
         const newSection: ResumeSection = {
             id: sectionTitle.toLowerCase().replace(/\s+/g, '-'),
             title: upperCaseTitle,
-            content: SECTION_PLACEHOLDERS[upperCaseTitle] || `[Add your ${sectionTitle.toLowerCase()} here]`
+            content: SECTION_PLACEHOLDERS[upperCaseTitle] || `<p>[Add your ${sectionTitle.toLowerCase()} here]</p>`
         };
         setResumeData(prev => ({...prev, sections: [...prev.sections, newSection]}));
     }
@@ -165,15 +167,15 @@ const Sidebar: React.FC<{
             <div>
               <h3 className="text-lg font-semibold text-slate-800 mb-4">Text & Paragraph</h3>
               <div className="flex items-center space-x-1 p-1 bg-slate-100 rounded-lg justify-around">
-                  <button className="p-2 rounded-md hover:bg-slate-200"><Icons.BoldIcon className="w-5 h-5"/></button>
-                  <button className="p-2 rounded-md hover:bg-slate-200"><Icons.ItalicIcon className="w-5 h-5"/></button>
-                  <button className="p-2 rounded-md hover:bg-slate-200"><Icons.UnderlineIcon className="w-5 h-5"/></button>
+                  <button onClick={() => onApplyFormat('bold')} className="p-2 rounded-md hover:bg-slate-200 text-slate-600"><Icons.BoldIcon className="w-5 h-5"/></button>
+                  <button onClick={() => onApplyFormat('italic')} className="p-2 rounded-md hover:bg-slate-200 text-slate-600"><Icons.ItalicIcon className="w-5 h-5"/></button>
+                  <button onClick={() => onApplyFormat('underline')} className="p-2 rounded-md hover:bg-slate-200 text-slate-600"><Icons.UnderlineIcon className="w-5 h-5"/></button>
                   <div className="w-px h-6 bg-slate-300"></div>
-                  <button className="p-2 rounded-md hover:bg-slate-200"><Icons.ListIcon className="w-5 h-5"/></button>
-                  <button className="p-2 rounded-md hover:bg-slate-200"><Icons.ListOrderedIcon className="w-5 h-5"/></button>
+                  <button onClick={() => onApplyFormat('insertUnorderedList')} className="p-2 rounded-md hover:bg-slate-200 text-slate-600"><Icons.ListIcon className="w-5 h-5"/></button>
+                  <button onClick={() => onApplyFormat('insertOrderedList')} className="p-2 rounded-md hover:bg-slate-200 text-slate-600"><Icons.ListOrderedIcon className="w-5 h-5"/></button>
                   <div className="w-px h-6 bg-slate-300"></div>
-                  <button className="p-2 rounded-md hover:bg-slate-200"><Icons.OutdentIcon className="w-5 h-5"/></button>
-                  <button className="p-2 rounded-md hover:bg-slate-200"><Icons.IndentIcon className="w-5 h-5"/></button>
+                  <button onClick={() => onApplyFormat('outdent')} className="p-2 rounded-md hover:bg-slate-200 text-slate-600"><Icons.OutdentIcon className="w-5 h-5"/></button>
+                  <button onClick={() => onApplyFormat('indent')} className="p-2 rounded-md hover:bg-slate-200 text-slate-600"><Icons.IndentIcon className="w-5 h-5"/></button>
               </div>
             </div>
              <div>
@@ -190,7 +192,7 @@ const Sidebar: React.FC<{
                     <label className="text-sm font-medium text-slate-700 mb-2 block">Text Alignment</label>
                     <div className="flex items-center bg-slate-100 rounded-lg p-1">
                         {(['left', 'center', 'right'] as const).map(align => (
-                            <button key={align} onClick={() => onFormattingChange('textAlign', align)} className={`flex-1 p-2 rounded-md transition-colors ${formatting.textAlign === align ? 'bg-white shadow-sm' : 'hover:bg-slate-200'}`}>
+                            <button key={align} onClick={() => onApplyFormat(`justify${align.charAt(0).toUpperCase() + align.slice(1)}`)} className={`flex-1 p-2 rounded-md transition-colors text-slate-600 hover:bg-slate-200`}>
                                 {align === 'left' && <Icons.AlignLeftIcon className="w-5 h-5 mx-auto"/>}
                                 {align === 'center' && <Icons.AlignCenterIcon className="w-5 h-5 mx-auto"/>}
                                 {align === 'right' && <Icons.AlignRightIcon className="w-5 h-5 mx-auto"/>}
@@ -214,7 +216,7 @@ const Sidebar: React.FC<{
                 <h3 className="text-lg font-semibold text-slate-800">Font Formatting</h3>
                  <div>
                     <label htmlFor="font-style" className="text-sm font-medium text-slate-700 mb-2 block">Font Style</label>
-                    <select id="font-style" value={formatting.fontStyle} onChange={e => onFormattingChange('fontStyle', e.target.value)} className="w-full p-2 border border-slate-300 rounded-md text-sm bg-white">
+                    <select id="font-style" value={formatting.fontStyle} onChange={e => onFormattingChange('fontStyle', e.target.value)} className="w-full p-2 border border-slate-300 rounded-md text-sm bg-white text-slate-900">
                         <option>Inter</option>
                         <option>Roboto</option>
                         <option>Lato</option>
@@ -302,9 +304,12 @@ const Sidebar: React.FC<{
 
 const ResumePreview: React.FC<{
   resumeData: ResumeData;
-  setResumeData: (action: ResumeData | ((prevState: ResumeData) => ResumeData)) => void;
+  onContentChange: (
+    field: keyof ResumeData | `contact.${keyof ResumeData['contact']}` | `section.${string}`,
+    value: string
+  ) => void;
   formatting: FormattingOptions;
-}> = ({ resumeData, setResumeData, formatting }) => {
+}> = ({ resumeData, onContentChange, formatting }) => {
     const [paginatedSections, setPaginatedSections] = useState<ResumeSection[][]>([resumeData.sections]);
 
     useEffect(() => {
@@ -324,17 +329,19 @@ const ResumePreview: React.FC<{
                 textAlign: format.textAlign
             }} className="text-slate-800">
                 <div className="text-center border-b pb-4 border-slate-300 resume-header-measure">
-                    <div className="text-3xl font-bold uppercase tracking-wider">{data.name}</div>
-                    <div className="text-md mt-1">{data.title}</div>
+                    <div className="text-3xl font-bold uppercase tracking-wider" dangerouslySetInnerHTML={{ __html: data.name }} />
+                    <div className="text-md mt-1" dangerouslySetInnerHTML={{ __html: data.title }} />
                     <div className="flex justify-center items-center space-x-2 text-sm mt-2 text-slate-600">
-                        <span>{data.contact.email}</span>|<span>{data.contact.phone}</span>|<span>{data.contact.linkedin}</span>
+                        <span dangerouslySetInnerHTML={{ __html: data.contact.email }} />|
+                        <span dangerouslySetInnerHTML={{ __html: data.contact.phone }} />|
+                        <span dangerouslySetInnerHTML={{ __html: data.contact.linkedin }} />
                     </div>
                 </div>
                 <div className="mt-6 space-y-5">
                     {data.sections.map(section => (
                         <div key={section.id} data-section-id={section.id} className="resume-section-measure">
                             <h2 className="text-sm font-bold uppercase tracking-widest border-b-2 pb-1 mb-2" style={{ borderColor: format.accentColor }}>{section.title}</h2>
-                            <div style={{ whiteSpace: 'pre-wrap' }}>{section.content || ' '}</div>
+                            <div dangerouslySetInnerHTML={{ __html: section.content || ' ' }} />
                         </div>
                     ))}
                 </div>
@@ -401,41 +408,19 @@ const ResumePreview: React.FC<{
 
     }, [resumeData, formatting]);
 
-    const handleContentChange = (
-        field: keyof ResumeData | `contact.${keyof ResumeData['contact']}` | `section.${string}`,
-        value: string
-    ) => {
-        setResumeData(prev => {
-            if (field.startsWith('section.')) {
-                const sectionId = field.split('.')[1];
-                return {
-                    ...prev,
-                    sections: prev.sections.map(s => s.id === sectionId ? {...s, content: value} : s)
-                };
-            }
-            if (field.startsWith('contact.')) {
-                const contactField = field.split('.')[1] as keyof ResumeData['contact'];
-                return {
-                    ...prev,
-                    contact: {...prev.contact, [contactField]: value}
-                };
-            }
-            return {...prev, [field as keyof ResumeData]: value};
-        });
-    };
-
     const EditableField: React.FC<{
+      // FIX: The type for fieldKey was too broad ('string'), causing a type error. 
+      // It's now correctly typed to match the specific keys expected by onContentChange.
       fieldKey: keyof ResumeData | `contact.${keyof ResumeData['contact']}` | `section.${string}`;
       value: string;
       className?: string;
-      isTextArea?: boolean;
-    }> = ({ fieldKey, value, className, isTextArea = false }) => (
+    }> = ({ fieldKey, value, className }) => (
         <div
             contentEditable
             suppressContentEditableWarning
-            onBlur={e => handleContentChange(fieldKey, e.currentTarget.innerText)}
+            data-field-key={fieldKey}
+            onInput={e => onContentChange(fieldKey, e.currentTarget.innerHTML)}
             className={`outline-none focus:bg-blue-50 focus:shadow-inner p-1 rounded-sm ${className}`}
-            style={{ whiteSpace: isTextArea ? 'pre-wrap' : 'normal' }}
             dangerouslySetInnerHTML={{ __html: value }}
         />
     );
@@ -476,7 +461,7 @@ const ResumePreview: React.FC<{
                         {pageSections.map(section => (
                             <div key={section.id}>
                                 <h2 className="text-sm font-bold uppercase tracking-widest border-b-2 pb-1 mb-2" style={{ borderColor: formatting.accentColor }}>{section.title}</h2>
-                                <EditableField fieldKey={`section.${section.id}`} value={section.content} isTextArea={true} />
+                                <EditableField fieldKey={`section.${section.id}`} value={section.content} />
                             </div>
                         ))}
                     </div>
@@ -516,6 +501,46 @@ const EditorPage: React.FC<{ onBackToHome: () => void }> = ({ onBackToHome }) =>
   const handleFormattingChange = (key: keyof FormattingOptions, value: any) => {
     setFormatting(prev => ({ ...prev, [key]: value }));
   };
+  
+  const handleContentChange = useCallback((
+    field: string,
+    value: string
+  ) => {
+      setResumeData(prev => {
+          if (field.startsWith('section.')) {
+              const sectionId = field.split('.')[1];
+              return {
+                  ...prev,
+                  sections: prev.sections.map(s => s.id === sectionId ? {...s, content: value} : s)
+              };
+          }
+          if (field.startsWith('contact.')) {
+              const contactField = field.split('.')[1] as keyof ResumeData['contact'];
+              return {
+                  ...prev,
+                  contact: {...prev.contact, [contactField]: value}
+              };
+          }
+          if (field === 'name' || field === 'title') {
+             return {...prev, [field as keyof ResumeData]: value};
+          }
+          return prev;
+      });
+  }, [setResumeData]);
+
+  const handleApplyFormat = (command: string) => {
+      document.execCommand(command, false, undefined);
+      
+      const activeElement = document.activeElement as HTMLElement;
+      if (activeElement && activeElement.isContentEditable) {
+          const fieldKey = activeElement.dataset.fieldKey;
+          const newHtml = activeElement.innerHTML;
+          if (fieldKey) {
+            handleContentChange(fieldKey, newHtml);
+          }
+      }
+  };
+
 
   const handleAiAction = async (action: 'ats' | 'enhance' | 'gap') => {
       setIsAiLoading(true);
@@ -559,6 +584,7 @@ const EditorPage: React.FC<{ onBackToHome: () => void }> = ({ onBackToHome }) =>
         isAiLoading={isAiLoading}
         formatting={formatting}
         onFormattingChange={handleFormattingChange}
+        onApplyFormat={handleApplyFormat}
       />
       <div className="flex flex-col flex-1">
         <header className="flex items-center justify-between p-3 bg-white border-b border-slate-200">
@@ -579,7 +605,7 @@ const EditorPage: React.FC<{ onBackToHome: () => void }> = ({ onBackToHome }) =>
             <button className="px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors">Export</button>
           </div>
         </header>
-        <ResumePreview resumeData={resumeData} setResumeData={setResumeData} formatting={formatting} />
+        <ResumePreview resumeData={resumeData} onContentChange={handleContentChange} formatting={formatting} />
       </div>
     </div>
   );

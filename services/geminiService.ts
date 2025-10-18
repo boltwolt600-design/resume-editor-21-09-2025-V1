@@ -1,5 +1,5 @@
 
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, Type } from "@google/genai";
 import { ResumeData } from '../types';
 
 const getAi = () => {
@@ -21,9 +21,9 @@ export const getAtsSuggestions = async (resumeData: ResumeData): Promise<{ score
     try {
         const ai = getAi();
         const resumeText = resumeToText(resumeData);
+        // FIX: Updated prompt to remove JSON formatting instructions as responseSchema will handle it.
         const prompt = `Analyze the following resume for Applicant Tracking System (ATS) compatibility. 
-        Provide a score from 0-100 and a list of actionable suggestions for improvement.
-        Format the output as a JSON object with two keys: "score" (a number) and "suggestions" (a string with bullet points).
+        Provide a score from 0-100 and a list of actionable suggestions for improvement as a string with bullet points.
         
         Resume:
         ---
@@ -33,12 +33,28 @@ export const getAtsSuggestions = async (resumeData: ResumeData): Promise<{ score
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
             contents: prompt,
+            // FIX: Added responseSchema to ensure the model returns a valid JSON object.
             config: {
                 responseMimeType: 'application/json',
+                responseSchema: {
+                    type: Type.OBJECT,
+                    properties: {
+                        score: {
+                            type: Type.NUMBER,
+                            description: "The ATS compatibility score from 0 to 100."
+                        },
+                        suggestions: {
+                            type: Type.STRING,
+                            description: "Actionable suggestions for improvement, as a string with bullet points."
+                        }
+                    },
+                    required: ['score', 'suggestions']
+                }
             }
         });
 
-        const jsonText = response.text.replace(/```json|```/g, '').trim();
+        // FIX: Removed unnecessary string manipulation as responseSchema guarantees valid JSON.
+        const jsonText = response.text.trim();
         const result = JSON.parse(jsonText);
         
         return {
