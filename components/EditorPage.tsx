@@ -71,25 +71,37 @@ const Sidebar: React.FC<{
   handleAiAction: (action: 'ats' | 'enhance' | 'gap') => void;
   isAiLoading: boolean;
   formatting: FormattingOptions;
-  onFormattingChange: (key: Exclude<keyof FormattingOptions, 'fontSize'>, value: any) => void;
-  onFontSizeChange: (value: number) => void;
-  sliderFontSize: number;
+  onFormattingChange: (key: keyof FormattingOptions, value: any) => void;
+  onFontPropertyChange: (property: 'fontStyle' | 'fontSize', value: string | number) => void;
   onApplyFormat: (command: string, value?: string) => void;
+  onFontDropdownMouseDown: (e: React.MouseEvent) => void;
 }> = ({ 
     activeTab, setActiveTab, resumeData, setResumeData, aiSuggestions, handleAiAction, 
-    isAiLoading, formatting, onFormattingChange, onFontSizeChange, sliderFontSize, onApplyFormat 
+    isAiLoading, formatting, onFormattingChange, onFontPropertyChange, onApplyFormat,
+    onFontDropdownMouseDown
 }) => {
   const tabs: SidebarTab[] = ['Design', 'Formatting', 'Sections', 'AI Copilot'];
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [showUnorderedListOptions, setShowUnorderedListOptions] = useState(false);
   const [showOrderedListOptions, setShowOrderedListOptions] = useState(false);
+  const [showFontStyleOptions, setShowFontStyleOptions] = useState(false);
+  const [showFontSizeOptions, setShowFontSizeOptions] = useState(false);
+
   const listOptionsRef = useRef<HTMLDivElement>(null);
+  const fontOptionsRef = useRef<HTMLDivElement>(null);
+  
+  const fontStyles = ["Arial", "Calibri", "Cambria", "Garamond", "Georgia", "Helvetica", "Inter", "Lato", "Merriweather", "Montserrat", "Open Sans", "Roboto", "Source Sans Pro", "Times New Roman", "Trebuchet MS", "Verdana"];
+  const fontSizes = [8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 28, 32, 36, 48, 72];
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
         if (listOptionsRef.current && !listOptionsRef.current.contains(event.target as Node)) {
             setShowUnorderedListOptions(false);
             setShowOrderedListOptions(false);
+        }
+        if (fontOptionsRef.current && !fontOptionsRef.current.contains(event.target as Node)) {
+            setShowFontStyleOptions(false);
+            setShowFontSizeOptions(false);
         }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -207,13 +219,14 @@ const Sidebar: React.FC<{
             <div>
               <h3 className="text-lg font-semibold text-slate-800 mb-4">Text & Paragraph</h3>
               <div className="flex items-center space-x-1 p-1 bg-slate-100 rounded-lg" ref={listOptionsRef}>
-                  <button onClick={() => onApplyFormat('bold')} className="p-2 rounded-md hover:bg-slate-200 text-slate-600"><Icons.BoldIcon className="w-5 h-5"/></button>
-                  <button onClick={() => onApplyFormat('italic')} className="p-2 rounded-md hover:bg-slate-200 text-slate-600"><Icons.ItalicIcon className="w-5 h-5"/></button>
-                  <button onClick={() => onApplyFormat('underline')} className="p-2 rounded-md hover:bg-slate-200 text-slate-600"><Icons.UnderlineIcon className="w-5 h-5"/></button>
+                  <button onMouseDown={(e) => e.preventDefault()} onClick={() => onApplyFormat('bold')} className="p-2 rounded-md hover:bg-slate-200 text-slate-600"><Icons.BoldIcon className="w-5 h-5"/></button>
+                  <button onMouseDown={(e) => e.preventDefault()} onClick={() => onApplyFormat('italic')} className="p-2 rounded-md hover:bg-slate-200 text-slate-600"><Icons.ItalicIcon className="w-5 h-5"/></button>
+                  <button onMouseDown={(e) => e.preventDefault()} onClick={() => onApplyFormat('underline')} className="p-2 rounded-md hover:bg-slate-200 text-slate-600"><Icons.UnderlineIcon className="w-5 h-5"/></button>
                   <div className="w-px h-6 bg-slate-300"></div>
                   
                   <div className="relative">
                       <button 
+                          onMouseDown={(e) => e.preventDefault()}
                           onClick={handleUnorderedListClick}
                           className="p-2 rounded-md hover:bg-slate-200 text-slate-600"
                           title="Bulleted List"
@@ -237,6 +250,7 @@ const Sidebar: React.FC<{
 
                   <div className="relative">
                       <button 
+                          onMouseDown={(e) => e.preventDefault()}
                           onClick={handleOrderedListClick}
                           className="p-2 rounded-md hover:bg-slate-200 text-slate-600"
                           title="Numbered List"
@@ -265,8 +279,8 @@ const Sidebar: React.FC<{
                   </div>
 
                   <div className="w-px h-6 bg-slate-300"></div>
-                  <button onClick={() => onApplyFormat('outdent')} className="p-2 rounded-md hover:bg-slate-200 text-slate-600"><Icons.OutdentIcon className="w-5 h-5"/></button>
-                  <button onClick={() => onApplyFormat('indent')} className="p-2 rounded-md hover:bg-slate-200 text-slate-600"><Icons.IndentIcon className="w-5 h-5"/></button>
+                  <button onMouseDown={(e) => e.preventDefault()} onClick={() => onApplyFormat('outdent')} className="p-2 rounded-md hover:bg-slate-200 text-slate-600"><Icons.OutdentIcon className="w-5 h-5"/></button>
+                  <button onMouseDown={(e) => e.preventDefault()} onClick={() => onApplyFormat('indent')} className="p-2 rounded-md hover:bg-slate-200 text-slate-600"><Icons.IndentIcon className="w-5 h-5"/></button>
               </div>
             </div>
              <div>
@@ -279,7 +293,7 @@ const Sidebar: React.FC<{
             </div>
             <div className="space-y-6">
                 <h3 className="text-lg font-semibold text-slate-800">Alignment & Layout</h3>
-                <div>
+                <div onMouseDown={(e) => e.preventDefault()}>
                     <label className="text-sm font-medium text-slate-700 mb-2 block">Text Alignment</label>
                     <div className="flex items-center bg-slate-100 rounded-lg p-1">
                         {(['left', 'center', 'right'] as const).map(align => (
@@ -305,19 +319,74 @@ const Sidebar: React.FC<{
             </div>
              <div className="space-y-5">
                 <h3 className="text-lg font-semibold text-slate-800">Font Formatting</h3>
-                 <div>
-                    <label htmlFor="font-style" className="text-sm font-medium text-slate-700 mb-2 block">Font Style</label>
-                    <select id="font-style" value={formatting.fontStyle} onChange={e => onFormattingChange('fontStyle', e.target.value)} className="w-full p-2 border border-slate-300 rounded-md text-sm bg-white text-slate-900">
-                        <option>Inter</option>
-                        <option>Roboto</option>
-                        <option>Lato</option>
-                        <option>Merriweather</option>
-                        <option>Source Sans Pro</option>
-                    </select>
-                </div>
-                <div>
-                    <label htmlFor="font-size" className="text-sm font-medium text-slate-700 mb-2 block">Font Size: {Math.round(sliderFontSize * 10) / 10}pt</label>
-                    <input id="font-size" type="range" min="9" max="14" step="0.5" value={sliderFontSize} onChange={e => onFontSizeChange(parseFloat(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+                 <div className="flex space-x-2" ref={fontOptionsRef}>
+                    {/* Font Style Dropdown */}
+                    <div className="w-2/3 relative">
+                         <label htmlFor="font-style-button" className="sr-only">Font Style</label>
+                         <button
+                            id="font-style-button"
+                            onMouseDown={onFontDropdownMouseDown}
+                            onClick={() => {
+                                setShowFontSizeOptions(false);
+                                setShowFontStyleOptions(prev => !prev);
+                            }}
+                            className="w-full p-2 border border-slate-300 rounded-md text-sm bg-white text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none flex justify-between items-center text-left"
+                         >
+                            <span style={{fontFamily: formatting.fontStyle}}>{formatting.fontStyle}</span>
+                            <Icons.ChevronDownIcon className="w-4 h-4 text-slate-500" />
+                         </button>
+                         {showFontStyleOptions && (
+                            <div className="absolute z-10 top-full mt-1 w-full bg-white border border-slate-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                                {fontStyles.map(font => (
+                                    <button
+                                        key={font}
+                                        onMouseDown={onFontDropdownMouseDown}
+                                        onClick={() => {
+                                            onFontPropertyChange('fontStyle', font);
+                                            setShowFontStyleOptions(false);
+                                        }}
+                                        className="w-full text-left px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100"
+                                        style={{fontFamily: font}}
+                                    >
+                                        {font}
+                                    </button>
+                                ))}
+                            </div>
+                         )}
+                    </div>
+                    {/* Font Size Dropdown */}
+                    <div className="w-1/3 relative">
+                         <label htmlFor="font-size-button" className="sr-only">Font Size</label>
+                         <button
+                            id="font-size-button"
+                            onMouseDown={onFontDropdownMouseDown}
+                            onClick={() => {
+                                setShowFontStyleOptions(false);
+                                setShowFontSizeOptions(prev => !prev);
+                            }}
+                            className="w-full p-2 border border-slate-300 rounded-md text-sm bg-white text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none flex justify-between items-center text-left"
+                        >
+                            <span>{formatting.fontSize}</span>
+                            <Icons.ChevronDownIcon className="w-4 h-4 text-slate-500" />
+                        </button>
+                         {showFontSizeOptions && (
+                            <div className="absolute z-10 top-full mt-1 w-full bg-white border border-slate-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                                {fontSizes.map(size => (
+                                    <button
+                                        key={size}
+                                        onMouseDown={onFontDropdownMouseDown}
+                                        onClick={() => {
+                                            onFontPropertyChange('fontSize', size);
+                                            setShowFontSizeOptions(false);
+                                        }}
+                                        className="w-full text-left px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100"
+                                    >
+                                        {size}
+                                    </button>
+                                ))}
+                            </div>
+                         )}
+                    </div>
                 </div>
             </div>
           </div>
@@ -539,7 +608,7 @@ const ResumePreview: React.FC<{
     return (
         <div className="flex-1 p-10 bg-slate-100 overflow-y-auto">
              <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=${formatting.fontStyle.replace(/ /g, '+')}:wght@400;700&display=swap');
+                @import url('https://fonts.googleapis.com/css2?family=Arial:wght@400;700&family=Calibri:wght@400;700&family=Cambria:wght@400;700&family=Garamond:wght@400;700&family=Georgia:wght@400;700&family=Helvetica:wght@400;700&family=Inter:wght@400;700&family=Lato:wght@400;700&family=Merriweather:wght@400;700&family=Montserrat:wght@400;700&family=Open+Sans:wght@400;700&family=Roboto:wght@400;700&family=Source+Sans+Pro:wght@400;700&family=Times+New+Roman:wght@400;700&family=Trebuchet+MS:wght@400;700&family=Verdana:wght@400;700&display=swap');
              `}</style>
             {paginatedSections.map((pageSections, pageIndex) => (
                 <div 
@@ -615,55 +684,60 @@ const EditorPage: React.FC<{ onBackToHome: () => void }> = ({ onBackToHome }) =>
     fontSize: 11,
   });
 
-  // State for the font size slider's visual value
-  const [sliderFontSize, setSliderFontSize] = useState(formatting.fontSize);
-
-  // Sync slider value with global formatting state when it changes
-  useEffect(() => {
-    setSliderFontSize(formatting.fontSize);
-  }, [formatting.fontSize]);
-
-
-  const handleFormattingChange = (key: Exclude<keyof FormattingOptions, 'fontSize'>, value: any) => {
+  const handleFormattingChange = (key: keyof FormattingOptions, value: any) => {
     setFormatting(prev => ({ ...prev, [key]: value }));
   };
 
-  const handleApplyStyleToSelection = (style: React.CSSProperties): boolean => {
-      const selection = window.getSelection();
-      if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return false;
+  const handleFontDropdownMouseDown = (e: React.MouseEvent) => {
+    // This is the core fix. By preventing the default mousedown action,
+    // we stop the contentEditable field from losing focus (blurring),
+    // which preserves the user's text selection.
+    e.preventDefault();
+  };
 
-      const range = selection.getRangeAt(0);
-      const span = document.createElement('span');
-      Object.assign(span.style, style);
+  const handleFontPropertyChange = (property: 'fontStyle' | 'fontSize', value: string | number) => {
+    const selection = window.getSelection();
 
-      try {
-          range.surroundContents(span);
-          selection.collapseToEnd();
-          return true;
-      } catch (e) {
-          console.error("Could not apply style. The selection may be too complex.", e);
-          alert("Could not apply style. The selection may be too complex. Please try selecting a smaller piece of text within a single paragraph.");
-          return false;
-      }
-  }
+    if (selection && !selection.isCollapsed) {
+        const range = selection.getRangeAt(0);
+        let editableElement = range.commonAncestorContainer;
+         if (editableElement.nodeType !== Node.ELEMENT_NODE) {
+            editableElement = editableElement.parentElement!;
+        }
+        while (editableElement && !(editableElement as HTMLElement).isContentEditable) {
+            editableElement = editableElement.parentElement!;
+        }
 
-  const handleFontSizeChange = (newSize: number) => {
-      setSliderFontSize(newSize);
+        if (!editableElement) return;
+        const fieldKey = (editableElement as HTMLElement).dataset.fieldKey;
 
-      const selection = window.getSelection();
-      if (selection && !selection.isCollapsed) {
-          const success = handleApplyStyleToSelection({ fontSize: `${newSize}pt` });
-          if (success) {
-              const activeElement = document.activeElement as HTMLElement;
-              if (activeElement?.isContentEditable && activeElement.dataset.fieldKey) {
-                  handleContentChange(activeElement.dataset.fieldKey, activeElement.innerHTML);
-              }
-          } else {
-              setSliderFontSize(formatting.fontSize); 
-          }
-      } else {
-          setFormatting(prev => ({ ...prev, fontSize: newSize }));
-      }
+        // Use a robust method to apply styles via a <span> tag.
+        // This avoids deprecated <font> tags and issues with surroundContents.
+        const tempDiv = document.createElement("div");
+        tempDiv.appendChild(range.cloneContents());
+        const selectedHTML = tempDiv.innerHTML;
+        
+        if (!selectedHTML) return;
+        
+        let styleAttribute = '';
+        if (property === 'fontStyle') {
+            styleAttribute = `font-family: '${value}'`;
+        } else if (property === 'fontSize') {
+            styleAttribute = `font-size: ${value}pt`;
+        }
+
+        const newHtml = `<span style="${styleAttribute}">${selectedHTML}</span>`;
+        document.execCommand('insertHTML', false, newHtml);
+        
+        // After modifying the DOM, read the new innerHTML and update the state.
+        if (fieldKey) {
+            handleContentChange(fieldKey, (editableElement as HTMLElement).innerHTML);
+        }
+
+    } else {
+        // If there's no selection, update the global formatting state.
+        setFormatting(prev => ({ ...prev, [property]: value }));
+    }
   };
   
   const handleContentChange = useCallback((
@@ -791,9 +865,9 @@ const EditorPage: React.FC<{ onBackToHome: () => void }> = ({ onBackToHome }) =>
         isAiLoading={isAiLoading}
         formatting={formatting}
         onFormattingChange={handleFormattingChange}
-        onFontSizeChange={handleFontSizeChange}
-        sliderFontSize={sliderFontSize}
+        onFontPropertyChange={handleFontPropertyChange}
         onApplyFormat={handleApplyFormat}
+        onFontDropdownMouseDown={handleFontDropdownMouseDown}
       />
       <div className="flex flex-col flex-1">
         <header className="flex items-center justify-between p-3 bg-white border-b border-slate-200">
