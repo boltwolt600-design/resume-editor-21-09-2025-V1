@@ -715,3 +715,181 @@ export const CREATIVE_ORGANIC_TEMPLATE = {
     fontSize: 10,
   }
 } as const;
+
+
+export const TECH_SIDEBAR_TEMPLATE = {
+  data: {
+    name: 'JAMES MARTINE',
+    title: 'GRAPHIC & WEB DESIGNER',
+    photo: 'https://images.unsplash.com/photo-1531384441138-2736e62e0919?q=80&w=1887&auto=format&fit=crop',
+    contact: {
+      phone: '909 555 0102',
+      email: 'yourname@email.com',
+      website: 'www.yourwebsite.com',
+      address: '123, Your Street, New York, NYC',
+      behance: 'behance.net/username',
+      facebook: 'facebook.com/username',
+    },
+    sections: [
+      { id: 'about_me', title: 'ABOUT ME', content: '<p>My Name is Richard Anderson lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation.</p>' },
+      { id: 'contact_sidebar', title: 'CONTACT', content: '<p>909 555 0102<br/>yourname@email.com<br/>www.yourwebsite.com<br/>123, Your Street, New York, NYC</p>' },
+      { id: 'follow_me', title: 'FOLLOW ME', content: '<p>Behance: behance.net/username<br/>Facebook: facebook.com/username</p>' },
+      { id: 'references_sidebar', title: 'REFERENCES', content: '<p><strong>PAUL ANDERSON</strong><br/>Web Designer, Design LTD<br/>Phone: 123-456-7890<br/>Email: info@email.com</p><br/><p><strong>WINSTON CHOW</strong><br/>Director, Design Store LTD<br/>Phone: 123-456-7890<br/>Email: winston@email.com</p>' },
+      { id: 'interests_sidebar', title: 'INTERESTS', content: '<div class="interest-grid"><p>GAMING</p><p>TRAVELLING</p><p>PHOTOGRAPHY</p><p>SPORTS</p><p>MUSIC</p><p>ART</p></div>'},
+      { id: 'education', title: 'EDUCATION', content: '<h4>UNIVERSITY OF STANFORD</h4><p>2003-2005</p><br/><h4>UNIVERSITY OF STANFORD</h4><p>2002-2003</p>'},
+      { id: 'experience', title: 'EXPERIENCE', content: '<p><strong>Lorem, Ipsum LTD</strong><br/>2005 - 2007</p><br/><p><strong>Smart Pixel Studio</strong><br/>2002 - 2004</p><br/><p><strong>Tech Technology</strong><br/>2001 - 2002</p>'},
+      { id: 'skills', title: 'SKILLS', content: '<div class="skill-bar-grid-alt"><p>Photoshop</p><div class="skill-bar-wrapper"><div class="skill-bar" style="width: 90%; background-color: #34495e;"></div></div><p>Illustrator</p><div class="skill-bar-wrapper"><div class="skill-bar" style="width: 80%; background-color: #34495e;"></div></div><p>HTML / CSS</p><div class="skill-bar-wrapper"><div class="skill-bar" style="width: 95%; background-color: #34495e;"></div></div><p>MS Word</p><div class="skill-bar-wrapper"><div class="skill-bar" style="width: 70%; background-color: #34495e;"></div></div><p>InDesign</p><div class="skill-bar-wrapper"><div class="skill-bar" style="width: 85%; background-color: #34495e;"></div></div><p>Wordpress</p><div class="skill-bar-wrapper"><div class="skill-bar" style="width: 75%; background-color: #34495e;"></div></div></div>'},
+    ]
+  },
+  formatting: {
+    accentColor: '#2c3e50',
+    textAlign: 'left',
+    lineSpacing: 1.5,
+    sideMargins: 25,
+    fontStyle: 'Lato',
+    fontSize: 10,
+  }
+} as const;
+
+export const SAGE_TIMELINE_TEMPLATE = {
+  data: {
+    name: 'Maria Souza',
+    title: 'Project Manager',
+    photo: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=1887&auto=format&fit=crop',
+    contact: {
+      address: 'Your city, Country',
+      phone: '+62 123 456 7890',
+      email: 'youremail@email.com',
+      website: 'www.yourdomain.com',
+    },
+    sections: [
+      { id: 'summary', title: '', content: '<p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim.</p>' },
+      { id: 'contact_block', title: 'Contact', content: '<p>Your city, Country<br/>+62 123 456 7890<br/>youremail@email.com<br/>www.yourdomain.com</p>' },
+      { id: 'education', title: 'Education', content: '<div class="timeline-entry-vertical-alt"><p><strong>Your degree/major</strong></p><p>University name</p><p>2014 - 2018</p></div><div class="timeline-entry-vertical-alt"><p><strong>Your degree/major</strong></p><p>University name</p><p>2014 - 2018</p></div>' },
+      { id: 'experience', title: 'Experience', content: '<div class="timeline-entry-vertical-alt"><p><strong>Your job title</strong></p><p>Company name - City</p><p>2014 - 2018</p><p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy.</p></div><div class="timeline-entry-vertical-alt"><p><strong>Your job title</strong></p><p>Company name - City</p><p>2014 - 2018</p><p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy.</p></div>' },
+      { id: 'skills', title: 'Skills', content: '<p>Adobe Illustrator<br/>Adobe Photoshop<br/>Adobe Xd<br/>Microsoft office</p>' },
+      { id: 'social', title: 'Social', content: '<p>Instagram: /your-username<br/>LinkedIn: /your-username</p>' },
+    ]
+  },
+  formatting: {
+    accentColor: '#698474',
+    textAlign: 'left',
+    lineSpacing: 1.7,
+    sideMargins: 25,
+    fontStyle: 'Lora',
+    fontSize: 11,
+  }
+} as const;
+
+export const MINIMALIST_SPLIT_TEMPLATE = {
+  data: {
+    name: 'MALIN FRANSISKA',
+    title: 'POSITION TITLE HERE',
+    photo: 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?q=80&w=1887&auto=format&fit=crop',
+    contact: {
+      address: '555 Street, City/Town',
+      phone: '+00 99 88 456 789',
+      email: 'your.name@email.com',
+      website: 'www.websitename.com',
+    },
+    sections: [
+      { id: 'summary', title: '', content: '<p>Lorem ipsum dolordummy text one evers since printer ipsum ley type and scrambled it to specimen book typesetting industry. Lorem standard Dolor Ipsum. Lorem Ipsum asmel galley type and scrambled it to specimen. ipsu galley type and scrambled</p>' },
+      { id: 'experience', title: 'WORK EXPERIENCE', content: '<h4>Enter Your Job Title</h4><p><em>Company name | Location | 2020 - Current</em></p><ul><li>Dummy text is evers since the when unknown printer ipsu ipsutet.</li><li>Esetting lorem when ane lorem standard ipsu ipsu.</li></ul><br/><h4>Enter Your Job Title</h4><p><em>Company name | Location | 2017 - 2019</em></p><ul><li>Dummy text is evers since the when unknown printer ipsu ipsutet.</li><li>Esetting lorem when ane lorem standard ipsu ipsu.</li></ul>' },
+      { id: 'references_main', title: 'REFERENCES', content: '<p><strong>Joshua Hutcherson</strong><br/>Position at Company<br/>Phone: +87 215 459 785<br/>Email: infoname@mail.com</p><br/><p><strong>Thomas Madisons</strong><br/>Position at Company<br/>Phone: +87 215 459 785<br/>Email: infoname@mail.com</p>' },
+      { id: 'contact_right', title: 'CONTACT', content: '<p>555 Street, City/Town<br/>+00 99 88 456 789<br/>your.name@email.com<br/>www.websitename.com</p>' },
+      { id: 'education_right', title: 'EDUCATION', content: '<p><strong>Ba (Hons) Graphics</strong><br/>University / Location<br/>2006 - 2010</p><br/><p><strong>Ma Graphics</strong><br/>Institute / Location<br/>2005 - 2006</p>' },
+      { id: 'expertise_right', title: 'EXPERTISE', content: '<p>Resource management<br/>Public Relation<br/>Team Leadership<br/>Social Media Marketing<br/>Content Marketing</p>' },
+    ]
+  },
+  formatting: {
+    accentColor: '#333333',
+    textAlign: 'left',
+    lineSpacing: 1.5,
+    sideMargins: 25,
+    fontStyle: 'Raleway',
+    fontSize: 10,
+  }
+} as const;
+
+export const MODERN_MINIMALIST_TEMPLATE = {
+  data: {
+    name: 'Sanat Rath',
+    title: 'Interaction Designer',
+    photo: '',
+    contact: {
+      email: 'sanatrath.com',
+      website: 'sanatrath.com',
+      phone: '404.860.0606',
+    },
+    sections: [
+      { id: 'experience', title: 'Work Experience', content: `<h4>Google / Interaction Designer</h4><p>MAY 2014 - PRESENT, NEW YORK CITY</p><p>Currently, I lead a team to maintain the internal style guide & implement new design patterns in Docs, Sheets & Slides on web & mobile. I create javascript prototypes for research studies, oversee production specs & facilitate design reviews with stakeholders across all the 3 apps.</p><br/><h4>Georgia Tech / Designer</h4><p>AUG 2012 - MAY 2014, ATLANTA</p><p>I designed, developed & launched 2 websites for Africa Atlanta 2014 & Westside Communities Alliance with 5k+ daily unique visitors. I created all marketing materials for Ivan Allen college of Liberal Arts.</p>` },
+      { id: 'education', title: 'Education', content: `<h4>Georgia Tech / MS HCI</h4><p>AUG 2012 - MAY 2014, ATLANTA</p><p>Initiated & contributed to several experimental projects involving web, ubiquity, tangible interaction, natural user interfaces, mobile augmented reality & ubiquitous computing.</p><br/><h4>IIT Roorkee / B.Arch</h4><p>AUG 2007 - MAY 2012, ROORKEE</p><p>Created design proposal for Museum of Modern Art, Odisha as a hybrid of art, interaction design & architecture in Bhubaneswar, India.</p>` },
+      { id: 'skills', title: 'Skills', content: `<p><strong>Design:</strong> Illustration & UI graphics • Strategy & vision presentations • User flows • Concept sketches • Wireframes & mock ups with Sketch & Illustrator • Motion design with Principle & After Effects • Production redlines • Style guides & pattern library</p><p><strong>Prototyping:</strong> Rapid prototyping using Keynote & Invision • Interactive flow with HTML/ CSS/ JS • Frameworks (Polymer, Backbone, Socket, Angular) & APIs</p>` },
+    ]
+  },
+  formatting: {
+    accentColor: '#2a6496',
+    textAlign: 'left',
+    lineSpacing: 1.6,
+    sideMargins: 30,
+    fontStyle: 'Helvetica Neue',
+    fontSize: 11,
+  }
+} as const;
+
+export const SOFTWARE_ENGINEER_PRO_TEMPLATE = {
+  data: {
+    name: 'ALEXANDER WILLIAM SMITH',
+    title: 'SOFTWARE ENGINEER',
+    photo: 'https://images.unsplash.com/photo-1557862921-37829c790f19?q=80&w=2071&auto=format&fit=crop',
+    contact: {
+      phone: '+1 555 4 56 7890',
+      email: 'alexander-smith@mail.com',
+      website: 'www.alexander-website.com',
+      address: '23 St, Tec City Los Angeles, CA',
+    },
+    sections: [
+      { id: 'summary', title: 'SUMMARY', content: '<p>Dynamic Software Engineer with over 5 years of experience specializing in backend architecture and development. Adept at designing, building, and integrating new innovative solutions to increase efficiency and scalability. Successfully led projects resulting in a 40% increase in performance metrics. Proficient in agile methodologies and ready to bring technical acumen to a progressive team.</p>' },
+      { id: 'experience', title: 'WORK EXPERIENCE', content: `<h4>LEAD SOFTWARE ENGINEER</h4><p><strong>Digital Innovations Inc | June 2021 - Present</strong></p><ul><li>Orchestrated a diverse team of 10 engineers effectively in developing innovative and scalable software solutions, significantly improving project delivery by 35%.</li><li>Adapted legacy code to modern development and design concepts, greatly enhancing system interoperability, functionality, and overall performance.</li></ul><br/><h4>SOFTWARE ENGINEER</h4><p><strong>CloudTech Solutions | July 2018 - May 2021</strong></p><ul><li>Developed 8 cloud-based applications, improving main system reliability by 30%.</li><li>Actively participated in the entire software development lifecycle, from initial concept to final deployment and maintenance, efficiently delivering the final product.</li></ul>` },
+      { id: 'projects', title: 'PROJECTS', content: '<p><strong>E-commerce Platform:</strong> A scalable solution for online retail. [link]</p><p><strong>Health Tracking App:</strong> Complex app for monitoring daily health metrics [link]</p>' },
+      { id: 'education_right', title: 'EDUCATION', content: '<p><strong>Master of Science in Software Engineering</strong><br/>Stanford University<br/>Sep 2016 - Jun 2018</p>' },
+      { id: 'skills_right', title: 'SKILLS', content: '<p><strong>Technical</strong><br/>System Architecture<br/>Java & Python<br/>RESTful APIs</p><br/><p><strong>Professional</strong><br/>Effective Communication<br/>Strategic Planning<br/>Decision Making</p>' },
+      { id: 'languages_right', title: 'LANGUAGES', content: '<p>English: Fluent<br/>Spanish: Intermediate</p>' },
+    ]
+  },
+  formatting: {
+    accentColor: '#333333',
+    textAlign: 'left',
+    lineSpacing: 1.5,
+    sideMargins: 25,
+    fontStyle: 'Calibri',
+    fontSize: 11,
+  }
+} as const;
+
+export const PASTEL_PANELS_TEMPLATE = {
+  data: {
+    name: 'Listia Prastiwie',
+    title: 'Graphic Design',
+    photo: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=1887&auto=format&fit=crop',
+    contact: {
+      social: '@your_usernamehere',
+    },
+    sections: [
+      { id: 'summary', title: '', content: '<p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim.</p>' },
+      { id: 'contact', title: 'CONTACT', content: '<p>Your Address Here blok 5-12,<br/>L.A., California.</p><p>+23-3422-4553-21</p><p>youremail@here.com</p>' },
+      { id: 'education', title: 'EDUCATION', content: '<p><strong>Visual Design, 2016</strong><br/>Name of University<br/>Your address here. LA, California</p><br/><p><strong>Visual Design, 2017</strong><br/>Name of University<br/>Your address here. LA, California</p>' },
+      { id: 'skills', title: 'PERSONAL SKILL', content: '<div class="skill-dots-grid"><p>Illustrator</p><div><span></span><span></span><span></span><span></span><span class="empty"></span></div><p>Photoshop</p><div><span></span><span></span><span></span><span class="empty"></span><span class="empty"></span></div><p>Figma</p><div><span></span><span></span><span></span><span></span><span></span></div></div>' },
+      { id: 'experience', title: 'EXPERIENCE', content: '<p><strong>Graphic Designer, 2018</strong><br/>Monday Studio, LA, California.<br/>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</p><br/><p><strong>Art Assistant, 2019</strong><br/>Tuesday Studio, LA, California.<br/>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</p>' },
+      { id: 'awards', title: 'AWARDS', content: '<p><strong>Best Design Thinking</strong><br/>Winning Design Graphic Urban Theme, LA</p><p><strong>Best Concept</strong><br/>Local Award Mountain Beach Theme, TEXAS</p>' },
+    ]
+  },
+  formatting: {
+    accentColor: '#b19cd9',
+    textAlign: 'left',
+    lineSpacing: 1.6,
+    sideMargins: 25,
+    fontStyle: 'Poppins',
+    fontSize: 10,
+  }
+} as const;

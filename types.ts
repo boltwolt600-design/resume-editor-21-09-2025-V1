@@ -21,7 +21,7 @@ export interface ResumeData {
 
 export type SidebarTab = 'Design' | 'Formatting' | 'Sections' | 'AI Copilot';
 
-export type TemplateName = 'default' | 'Professional Classic' | 'Tech Modern' | 'Professional Photo' | 'Executive Classic' | 'Creative Modern' | 'Creative Photo' | 'Manjari Singh' | 'Olivia Lington' | 'Alex Brahar' | 'Diya Patel' | 'Claudia Alves' | 'Becky Lu' | 'Executive Professional' | 'Modern Photo' | 'Chronological Clean' | 'Creative Organic';
+export type TemplateName = 'default' | 'Professional Classic' | 'Tech Modern' | 'Professional Photo' | 'Executive Classic' | 'Creative Modern' | 'Creative Photo' | 'Manjari Singh' | 'Olivia Lington' | 'Alex Brahar' | 'Diya Patel' | 'Claudia Alves' | 'Becky Lu' | 'Executive Professional' | 'Modern Photo' | 'Chronological Clean' | 'Creative Organic' | 'Tech Sidebar' | 'Sage Timeline' | 'Minimalist Split' | 'Modern Minimalist' | 'Software Engineer Pro' | 'Pastel Panels';
 
 export interface Aisuggestions {
   atsScore: number;
