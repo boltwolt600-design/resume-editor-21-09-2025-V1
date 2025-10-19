@@ -1,4 +1,3 @@
-
 export interface ResumeSection {
   id: string;
   title: string;
@@ -9,6 +8,7 @@ export interface ResumeContact {
   email: string;
   phone: string;
   linkedin: string;
+  [key: string]: string; 
 }
 
 export interface ResumeData {
@@ -16,11 +16,12 @@ export interface ResumeData {
   title: string;
   contact: ResumeContact;
   sections: ResumeSection[];
+  photo?: string;
 }
 
 export type SidebarTab = 'Design' | 'Formatting' | 'Sections' | 'AI Copilot';
 
-export type TemplateName = 'Professional Classic' | 'Tech Modern' | 'Professional Photo' | 'Executive Classic' | 'Creative Modern' | 'Creative Photo';
+export type TemplateName = 'default' | 'Professional Classic' | 'Tech Modern' | 'Professional Photo' | 'Executive Classic' | 'Creative Modern' | 'Creative Photo';
 
 export interface Aisuggestions {
   atsScore: number;
