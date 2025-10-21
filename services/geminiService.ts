@@ -2,8 +2,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { ResumeData } from '../types';
 
-// FIX: Initialize GoogleGenAI once and remove API_KEY check per guidelines.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY || '' });
 
 const resumeToText = (resumeData: ResumeData): string => {
     let text = `${resumeData.name}\n${resumeData.title}\n${resumeData.contact.email} | ${resumeData.contact.phone} | ${resumeData.contact.linkedin}\n\n`;
